@@ -41,8 +41,8 @@ public class TransactionOutput implements Serializable,JsonSerializable {
 			value = reader.readSerializable(Fixed8.class);
 			scriptHash = reader.readSerializable(UInt160.class);
 			
-			if (value.compareTo(Fixed8.ZERO) <= 0)
-				throw new IOException();
+//			if (value.compareTo(Fixed8.ZERO) <= 0)
+//				throw new IOException();
 		} catch (InstantiationException | IllegalAccessException e) {
 			throw new IOException();
 		}
