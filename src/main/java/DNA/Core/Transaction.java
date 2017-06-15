@@ -63,8 +63,9 @@ public abstract class Transaction extends Inventory implements JsonSerializable 
 	}
 	@Override
 	public void deserializeUnsigned(BinaryReader reader) throws IOException {
-        if (type.value() != reader.readByte())
+        if (type.value() != reader.readByte()) {
             throw new IOException();
+        }
         deserializeUnsignedWithoutType(reader);
 	}
 
@@ -74,7 +75,7 @@ public abstract class Transaction extends Inventory implements JsonSerializable 
             	throw new IOException();
             }
             deserializeExclusiveData(reader);
-            nonce = reader.readVarInt();
+//            nonce = reader.readVarInt();
 			attributes = reader.readSerializableArray(TransactionAttribute.class);
 	        inputs = reader.readSerializableArray(TransactionInput.class);
 	        TransactionInput[] inputs_all = getAllInputs().toArray(TransactionInput[]::new);
@@ -108,7 +109,7 @@ public abstract class Transaction extends Inventory implements JsonSerializable 
         writer.writeByte(type.value());
         writer.writeByte(version);
         serializeExclusiveData(writer);
-        writer.writeVarInt(nonce);
+//        writer.writeVarInt(nonce);
         writer.writeSerializableArray(attributes);
         writer.writeSerializableArray(inputs);
         writer.writeSerializableArray(outputs);
@@ -119,9 +120,15 @@ public abstract class Transaction extends Inventory implements JsonSerializable 
 	
 	@Override
 	public boolean equals(Object obj) {
-		if (obj == this) return true;
-		if (obj == null) return false;
-		if (!(obj instanceof Transaction)) return false;
+		if (obj == this) {
+			return true;
+		}
+		if (obj == null) {
+			return false;
+		}
+		if (!(obj instanceof Transaction)) {
+			return false;
+		}
 		Transaction tx = (Transaction)obj;
 		return hash().equals(tx.hash());
 	}
@@ -226,7 +233,7 @@ public abstract class Transaction extends Inventory implements JsonSerializable 
 			throw new RuntimeException();
 		}
 		version = (byte)json.get("PayloadVersion").asNumber();
-		nonce = (long)json.get("Nonce").asNumber();
+//		nonce = (long)json.get("Nonce").asNumber();
 		
 		JArray array = (JArray) json.get("Attributes");
 		int count = -1;
@@ -314,7 +321,9 @@ public abstract class Transaction extends Inventory implements JsonSerializable 
 				} catch (Exception ex) {
 					throw new RuntimeException(ex);
 				}
-                if (tx == null) return null;
+                if (tx == null) {
+                	return null;
+                }
                 for (TransactionInput input : entry.getValue()) {
                     map.put(input, tx.outputs[input.prevIndex]);
                 }

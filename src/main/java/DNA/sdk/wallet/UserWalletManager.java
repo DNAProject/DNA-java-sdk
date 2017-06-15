@@ -154,6 +154,19 @@ public class UserWalletManager {
 		throw new UnsupportedOperationException();
 	}
 	/**
+	 * 注册资产
+	 * 
+	 * @param issuer	资产控制者
+	 * @param name		资产名称
+	 * @param amount	资产数量
+	 * @param desc		描述
+	 * @return	交易编号
+	 * @throws Exception
+	 */
+	public String reg(String issuer, String name, long amount, String desc) throws Exception {
+		return regToken(issuer, name, amount, desc);
+	}
+	/**
 	 * 注册Token资产
 	 * 
 	 * @param issuer	资产控制者
@@ -332,7 +345,7 @@ public class UserWalletManager {
 			Map<Transaction, Integer> txs = uw.LoadTransactions();
 			if(txs != null && txs.keySet().stream().filter(p -> txs.get(p).intValue() > 1).filter(p -> p.hash().toString().equals(txid)).count() == 1) {
 				System.out.println("sync finish, txid:"+txid);
-				break;
+				return;
 			}
 			try {
 				Thread.sleep(1000*5);
@@ -347,7 +360,7 @@ public class UserWalletManager {
 		RegisterTransaction tx = new RegisterTransaction();
 		
 		tx.precision = 0;						// 精度
-		tx.assetType = AssetType.Share;			// 资产类型
+		tx.assetType = AssetType.Token;			// 资产类型
 		tx.recordType = RecordType.UTXO;			// 记账模式
 		tx.nonce = (int)Math.random()*10;		// 随机数
 		

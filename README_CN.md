@@ -59,7 +59,7 @@ List<String>  list = wm.createAccount(numCount);
 
 eg：
 
-String assetid = wm.regShare(controller, name, amount , desc);
+String assetid = wm.reg(controller, name, amount , desc);
 
 
 
@@ -222,7 +222,7 @@ String controller= "";		// 资产控制者地址
 String name = "";			// 资产名称
 long amount = 10000;		// 资产数量
 String desc = "";			// 描述
-String assetid = wm.regShare(controller, name, amount , desc);
+String assetid = wm.reg(controller, name, amount , desc);
 System.out.println("rs:"+assetid);
 ```
 

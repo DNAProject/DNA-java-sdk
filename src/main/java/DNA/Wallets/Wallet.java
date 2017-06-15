@@ -420,12 +420,6 @@ public abstract class Wallet implements AutoCloseable {
         if (tx.attributes == null) tx.attributes = new TransactionAttribute[0];
         fee = fee.add(tx.systemFee());
         Map<UInt256, Fixed8> pay_total = Arrays.stream(tx instanceof IssueTransaction ? new TransactionOutput[0] : tx.outputs).collect(Collectors.groupingBy(p -> p.assetId)).entrySet().stream().collect(Collectors.toMap(p -> p.getKey(), p -> Fixed8.sum(p.getValue().toArray(new TransactionOutput[0]), o -> o.value)));
-        if (fee.compareTo(Fixed8.ZERO) > 0) {
-//        	Fixed8 value = pay_total.get(Blockchain.ANTCOIN.hash());
-//        	if (value == null) value = Fixed8.ZERO;
-//        	value = value.add(fee);
-//        	pay_total.put(Blockchain.ANTCOIN.hash(), value);
-        }
         Map<UInt256, Coin[]> pay_coins = pay_total.entrySet().stream().collect(Collectors.toMap(p -> p.getKey(), p -> findUnspentCoins(p.getKey(), p.getValue(), from)));
         if (pay_coins.values().stream().anyMatch(p -> p == null)) return null;
         Map<UInt256, Fixed8> input_sum = pay_coins.entrySet().stream().collect(Collectors.toMap(p -> p.getKey(), p -> Fixed8.sum(p.getValue(), c -> c.value)));
