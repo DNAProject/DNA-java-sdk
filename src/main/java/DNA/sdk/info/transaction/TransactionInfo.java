@@ -14,4 +14,11 @@ public class TransactionInfo {
 	public List<TxInputInfo> inputs;	// 交易输入
 	public List<TxOutputInfo> outputs;	// 交易输出
 	public String attrs;			// 描述
+	
+	
+	@Override
+	public String toString() {
+		return "TransactionInfo [txid=" + txid + ", type=" + type + ", inputs="
+				+ inputs + ", outputs=" + outputs + ", attrs=" + attrs + "]";
+	}
 }

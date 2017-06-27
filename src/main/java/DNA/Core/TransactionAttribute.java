@@ -39,10 +39,8 @@ public class TransactionAttribute implements Serializable,JsonSerializable {
         } else if (usage == TransactionAttributeUsage.CertUrl 
         		|| usage == TransactionAttributeUsage.DescriptionUrl) {
             writer.writeByte((byte)data.length);
-        } else if (usage == TransactionAttributeUsage.Description 
-        		|| Byte.toUnsignedInt(usage.value()) >= Byte.toUnsignedInt(TransactionAttributeUsage.Remark.value())) {
-        	writer.writeVarBytes(data);
-        	return;
+        } else if (usage == TransactionAttributeUsage.Description || Byte.toUnsignedInt(usage.value()) >= Byte.toUnsignedInt(TransactionAttributeUsage.Remark.value())) {
+        	writer.writeByte((byte)data.length);
         }
         
         if (usage == TransactionAttributeUsage.ECDH02 || usage == TransactionAttributeUsage.ECDH03)

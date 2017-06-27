@@ -175,28 +175,21 @@ public class UserWallet extends Wallet {
     }
 
     public Map<DNA.Core.Transaction,Integer> LoadTransactions() {
-//    	List<Tx> list = new ArrayList<DNA.Core.Transaction>();
     	Map<DNA.Core.Transaction, Integer> txMap = new HashMap<DNA.Core.Transaction, Integer>();
     	try (WalletDataContext ctx = new WalletDataContext(dbPath())) {
     		Transaction[] trans  = ctx.getTransaction();
         	for (int i = 0; i < trans.length; i++) {
         		try {
         			byte type = trans[i].type;
-        			switch(TransactionType.valueOf(type)) {
-	        			case  RegisterTransaction: {
-	        				DNA.Core.Transaction tx = Serializable.from(trans[i].rawData, DNA.Core.RegisterTransaction.class);
-	        				txMap.put(tx, trans[i].height);
-	        			}break;
-	        			case IssueTransaction: {
-	        				DNA.Core.Transaction tx = Serializable.from(trans[i].rawData, DNA.Core.IssueTransaction.class);
-	        				txMap.put(tx, trans[i].height);
-	        			}break;
-	        			case TransferTransaction: {
-	        				DNA.Core.Transaction tx = Serializable.from(trans[i].rawData, DNA.Core.TransferTransaction.class);
-	        				txMap.put(tx, trans[i].height);
-	        			}break;
-						default:
-							break;
+        			if(TransactionType.RegisterTransaction.value() == type) {
+        				DNA.Core.Transaction tx = Serializable.from(trans[i].rawData, DNA.Core.RegisterTransaction.class);
+        				txMap.put(tx, trans[i].height);
+        			} else if(TransactionType.IssueTransaction.value() == type) {
+        				DNA.Core.Transaction tx = Serializable.from(trans[i].rawData, DNA.Core.IssueTransaction.class);
+        				txMap.put(tx, trans[i].height);
+        			} else if(TransactionType.TransferTransaction.value() == type) {
+        				DNA.Core.Transaction tx = Serializable.from(trans[i].rawData, DNA.Core.TransferTransaction.class);
+        				txMap.put(tx, trans[i].height);
         			}
 				} catch (Exception e) {
 					String errMsg = String.format("Failed to LoadTx,tx.type:%s,height:%s,errMsg:%s",trans[i].type,trans[i].height,e.getMessage());
@@ -205,11 +198,6 @@ public class UserWallet extends Wallet {
         	}
         	return txMap;
     	}
-    }
-    
-    class Tx {
-    	public DNA.Core.Transaction tx;
-    	public int height;
     }
     
     private void onCoinsChanged(WalletDataContext ctx, DNA.Wallets.Coin[] added, DNA.Wallets.Coin[] changed, DNA.Wallets.Coin[] deleted) {

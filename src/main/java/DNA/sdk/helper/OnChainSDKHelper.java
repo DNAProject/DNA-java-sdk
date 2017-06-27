@@ -123,6 +123,7 @@ public class OnChainSDKHelper {
 		}
 		System.out.println("\tinputs:"+tx.inputs.length);
 		for(TransactionInput in: tx.inputs) {
+			System.out.println("\t\tinput.prevHash:"+byte2str(in.prevHash.toArray()));
 			System.out.println("\t\tinput.prevHash:"+in.prevHash.toString());
 			System.out.println("\t\tinput.prevIndx:"+in.prevIndex);
 		}
@@ -135,6 +136,7 @@ public class OnChainSDKHelper {
 		System.out.println("\tscripts:"+tx.scripts.length);
 		for(Script sc: tx.scripts) {
 			System.out.println("\t\tsc:"+sc.toString()+"\n\t\tsc.redeem:"+toHexString(sc.redeemScript) + "\n\t\tsc.stack :"+toHexString(sc.stackScript));
+			System.out.println("\t\tsc:"+sc.toString()+"\n\t\tsc.redeem.byte:"+byte2str(sc.redeemScript) + "\n\t\tsc.stack.byte :"+byte2str(sc.stackScript));
 		}
 		System.out.println("\ttx.hash():"+tx.hash());
 		System.out.println("\ttx.sysF():"+tx.systemFee());
@@ -142,6 +144,14 @@ public class OnChainSDKHelper {
 			RegisterTransaction reg = (RegisterTransaction) tx;
 			System.out.println("\ttx.amount:"+reg.amount);
 			System.out.println("\ttx.type:"+reg.assetType);
+			System.out.println("\ttx.name:"+reg.name);
+			System.out.println("\ttx.nonce:"+reg.nonce);
+			System.out.println("\ttx.precision:"+reg.precision);
+			System.out.println("\ttx.pubkey(true):"+byte2str(reg.issuer.getEncoded(true)));
+			System.out.println("\ttx.pubkey(false):"+byte2str(reg.issuer.getEncoded(false)));
+			System.out.println("\ttx.admin:"+reg.admin);
+			System.out.println("\ttx.unsign:"+byte2str(reg.getHashData()));
+			System.out.println("\ttx.unsign:"+byte2str(reg.toArray()));
 		}
 		if(tx instanceof RecordTransaction) {
 			RecordTransaction rr = (RecordTransaction) tx;

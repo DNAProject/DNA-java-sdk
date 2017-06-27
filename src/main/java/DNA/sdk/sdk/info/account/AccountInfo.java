@@ -12,4 +12,12 @@ public class AccountInfo {
 	public String prikey;	// 私钥
 	public String priwif;	// 私钥wif
 	public String pkhash;	// 公钥hash
+	@Override
+	public String toString() {
+		return "AccountInfo [address=" + address + ", pubkey=" + pubkey
+				+ ", prikey=" + prikey + ", priwif=" + priwif + ", pkhash="
+				+ pkhash + "]";
+	}
+	
+	
 }
