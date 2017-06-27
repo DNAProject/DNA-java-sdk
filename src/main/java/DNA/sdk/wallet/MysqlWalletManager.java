@@ -8,6 +8,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.alibaba.fastjson.JSON;
+
 import DNA.Fixed8;
 import DNA.Helper;
 import DNA.UInt160;
@@ -371,18 +373,8 @@ public class MysqlWalletManager {
 	}
 	
 	public AssetInfo getAssetInfo(String assetid) throws RestException {
-		Transaction tx = restNode.getAsset(assetid);
-		if(tx instanceof RegisterTransaction) {
-			RegisterTransaction rr = (RegisterTransaction) tx;
-			AssetInfo info = new AssetInfo();
-			info.assetid = assetid;
-			info.assetname = rr.name;
-			info.regAmount = rr.amount.toLong();
-			info.register = Helper.toHexString(rr.issuer.getEncoded(true));
-			info.controller = rr.admin.toString();
-			return info;
-		}
-		return null;
+		String ss = restNode.getAsset(assetid);
+		return JSON.parseObject(ss, AssetInfo.class);
 	}
 	
 	public TransactionInfo getTransactionInfo(String txid) throws RestException {

@@ -49,13 +49,13 @@ public class RestHttp {
      * @throws NoSuchProviderException
      * @throws KeyManagementException
      */
-    private static String post(String url, String body, boolean https) throws IOException, NoSuchAlgorithmException, NoSuchProviderException, KeyManagementException {
+    public static String post(String url, String body, boolean https) throws IOException, NoSuchAlgorithmException, NoSuchProviderException, KeyManagementException {
     	// 创建链接
     	URL u = new URL(url);
         HttpURLConnection http = (HttpURLConnection) u.openConnection();
         // 连接超时
-        http.setConnectTimeout(50000);
-        http.setReadTimeout(50000);
+        http.setConnectTimeout(10000);
+        http.setReadTimeout(10000);
         http.setRequestMethod("POST");
         http.setRequestProperty("Content-Type","application/json");
         if(https) {
@@ -88,8 +88,9 @@ public class RestHttp {
         }
         return sb.toString();
     }
+    
     public static String post(String url, String body) throws IOException, NoSuchAlgorithmException, NoSuchProviderException, KeyManagementException {
-//    	System.out.println(String.format("POST url=%s, body=%s", url, body));
+    	System.out.println(String.format("POST url=%s, body=%s", url, body));
     	if(url.startsWith("https")){
     		return post(url, body, true);
     	}else{
@@ -153,6 +154,7 @@ public class RestHttp {
         	return get(url, false);
         }
     }
+    
     public static String get(String url, Map<String, String> params/*, Map<String, String> body*/) throws KeyManagementException, NoSuchAlgorithmException, NoSuchProviderException, IOException {
     	return get(url+initParams(params));
     }

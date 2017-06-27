@@ -8,6 +8,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.alibaba.fastjson.JSON;
+
 import DNA.Fixed8;
 import DNA.Helper;
 import DNA.UInt160;
@@ -33,6 +35,7 @@ import DNA.Network.Rest.RestNode;
 import DNA.Wallets.Account;
 import DNA.Wallets.Contract;
 import DNA.Wallets.Wallet;
+import DNA.sdk.helper.OnChainSDKHelper;
 import DNA.sdk.info.asset.AssetInfo;
 import DNA.sdk.info.transaction.TransactionInfo;
 import DNA.sdk.info.transaction.TxInputInfo;
@@ -52,6 +55,11 @@ public class UserWalletManager {
 	private String action = "sendrawtransaction",version = "v001",type = "t001";
 	private UserWallet uw;
 	private RestNode restNode;
+	private boolean isWaitSync = true;
+	
+	public void setWaitSync(boolean isWaitSync) {
+		this.isWaitSync = isWaitSync;
+	}
 	
 	public static UserWalletManager getWallet(String path, String url, String accessToken) {
 		UserWalletManager wm = new UserWalletManager();
@@ -163,8 +171,8 @@ public class UserWalletManager {
 	 * @return	交易编号
 	 * @throws Exception
 	 */
-	public String reg(String issuer, String name, long amount, String desc) throws Exception {
-		return regToken(issuer, name, amount, desc);
+	public String reg(String issuer, String name, long amount, String desc, String controller, int precision) throws Exception {
+		return regToken(issuer, name, amount, desc, controller, precision);
 	}
 	/**
 	 * 注册Token资产
@@ -176,8 +184,8 @@ public class UserWalletManager {
 	 * @return	交易编号
 	 * @throws Exception
 	 */
-	public String regToken(String issuer, String name, long amount, String desc) throws Exception {
-		return regToken(getAccount(issuer), name, amount, desc);
+	public String regToken(String issuer, String name, long amount, String desc, String controller, int precision) throws Exception {
+		return regToken(getAccount(issuer), name, amount, desc, controller, precision);
 	}
 	/**
 	 * 注册Share资产
@@ -189,14 +197,14 @@ public class UserWalletManager {
 	 * @return	交易编号
 	 * @throws Exception
 	 */
-	public String regShare(String issuer, String name, long amount, String desc) throws Exception {
-		return regShare(getAccount(issuer), name, amount, desc);
+	public String regShare(String issuer, String name, long amount, String desc, String controller, int precision) throws Exception {
+		return regShare(getAccount(issuer), name, amount, desc, controller, precision);
 	}
-	public String regToken(Account acc, String assetName, long assetAmount, String txDesc) throws Exception {
-		return reg(getRegTx(acc, assetName, assetAmount, txDesc, AssetType.Token));
+	public String regToken(Account acc, String assetName, long assetAmount, String txDesc, String controller, int precision) throws Exception {
+		return reg(getRegTx(acc, assetName, assetAmount, txDesc, AssetType.Token, controller, precision));
 	}
-	public String regShare(Account acc, String assetName, long assetAmount, String txDesc) throws Exception {
-		return reg(getRegTx(acc, assetName, assetAmount, txDesc, AssetType.Share));
+	public String regShare(Account acc, String assetName, long assetAmount, String txDesc, String controller, int precision) throws Exception {
+		return reg(getRegTx(acc, assetName, assetAmount, txDesc, AssetType.Share, controller, precision));
 	}
 	private String reg(RegisterTransaction regTx) throws Exception {
 		RegisterTransaction signedTx4Reg = uw.makeTransaction(regTx, Fixed8.ZERO);
@@ -206,12 +214,11 @@ public class UserWalletManager {
 			signedTx4Reg.scripts = context.getScripts();
 		}
 		uw.saveTransaction(signedTx4Reg);
-		String txHex = Helper.toHexString(signedTx4Reg.toArray());;
+		String txHex = Helper.toHexString(signedTx4Reg.toArray());
 		boolean f2 = restNode.sendRawTransaction(action, version, type, txHex);
-		
 		String txid = signedTx4Reg.hash().toString();
 		System.out.println("reg.sign:"+f1+",rst:"+f2+",txid:"+ txid);
-		if(f2) {
+		if(f2 && isWaitSync) {
 			wait(uw,txid); // 等待生效
 		}
 		return txid;
@@ -251,7 +258,7 @@ public class UserWalletManager {
 		
 		String txid4Iss = signedTx4Iss.hash().toString();
 		System.out.println("iss.sign:"+f3+",rst:"+f4+",txid:"+ txid4Iss);
-		if(f4) {
+		if(f4 && isWaitSync) {
 			wait(uw,txid4Iss); // 等待生效
 		}
 		return txid4Iss;
@@ -285,11 +292,12 @@ public class UserWalletManager {
 		}
 		uw.saveTransaction(signedTx4Trf);
 		String txHex = Helper.toHexString(signedTx4Trf.toArray());;
+		OnChainSDKHelper.printTransaction(signedTx4Trf);
 		boolean f6 = restNode.sendRawTransaction(action, version, type, txHex);
 		
 		String txid4Trf = signedTx4Trf.hash().toString();
 		System.out.println("trf.sign:"+f5+",rst:"+f6+",txid:"+ txid4Trf);
-		if(f6) {
+		if(f6 && isWaitSync) {
 			wait(uw,txid4Trf); // 等待生效
 		}
 		return txid4Trf;
@@ -311,6 +319,13 @@ public class UserWalletManager {
 		String txid = tx.hash().toString();
 		System.out.println("rcd.sign:null, rst:"+f+",txid:"+txid);
 		return txid;
+	}
+	public boolean storeCert(String data) throws Exception {
+		RecordTransaction tx = getRcdTx(data, null);
+		String txHex = Helper.toHexString(tx.toArray());;
+		boolean f = restNode.sendRawTransaction(action, version, type, txHex);
+		
+		return f;
 	}
 	
 	/**
@@ -356,10 +371,10 @@ public class UserWalletManager {
 		System.out.println("sync timeout,txid:"+txid);
 	}
 	
-	private RegisterTransaction getRegTx(Account acc, String assetName, long assetAmount, String txDesc, AssetType assetType) {
+	private RegisterTransaction getRegTx(Account acc, String assetName, long assetAmount, String txDesc, AssetType assetType, String controller, int precision) {
 		RegisterTransaction tx = new RegisterTransaction();
 		
-		tx.precision = 0;						// 精度
+		tx.precision = (byte) precision;						// 精度
 		tx.assetType = AssetType.Token;			// 资产类型
 		tx.recordType = RecordType.UTXO;			// 记账模式
 		tx.nonce = (int)Math.random()*10;		// 随机数
@@ -368,12 +383,13 @@ public class UserWalletManager {
 		tx.name = assetName;	
 		tx.amount = Fixed8.parse(String.valueOf(assetAmount));	
 		tx.issuer = acc.publicKey;	
-		tx.admin = Wallet.toScriptHash(Contract.createSignatureContract(acc.publicKey).address()); 
+		tx.admin = Wallet.toScriptHash(controller); 
+//		tx.admin = Wallet.toScriptHash(Contract.createSignatureContract(acc.publicKey).address()); 
 		tx.outputs = new TransactionOutput[0];
 		if(txDesc != null && txDesc.length() > 0) {
 			tx.attributes = new TransactionAttribute[1];
 			tx.attributes[0] = new TransactionAttribute();
-			tx.attributes[0].usage = TransactionAttributeUsage.DescriptionUrl;
+			tx.attributes[0].usage = TransactionAttributeUsage.Description;
 			tx.attributes[0].data = (txDesc+new Date().toString()).getBytes();
 		}
 		return tx;
@@ -388,7 +404,7 @@ public class UserWalletManager {
 		if(txDesc != null && txDesc.length() > 0) {
 			tx.attributes = new TransactionAttribute[1];
 			tx.attributes[0] = new TransactionAttribute();
-			tx.attributes[0].usage = TransactionAttributeUsage.DescriptionUrl;
+			tx.attributes[0].usage = TransactionAttributeUsage.Description;
 			tx.attributes[0].data = (txDesc+new Date().toString()).getBytes();
 		}
 		return tx;
@@ -404,7 +420,7 @@ public class UserWalletManager {
 		if(txDesc != null && txDesc.length() > 0) {
 			tx.attributes = new TransactionAttribute[1];
 			tx.attributes[0] = new TransactionAttribute();
-			tx.attributes[0].usage = TransactionAttributeUsage.DescriptionUrl;
+			tx.attributes[0].usage = TransactionAttributeUsage.Description;
 			tx.attributes[0].data = (txDesc+new Date().toString()).getBytes();
 		} else {
 			tx.attributes = new TransactionAttribute[0];
@@ -421,7 +437,7 @@ public class UserWalletManager {
 		if(txDesc != null && txDesc.length() > 0) {
 			rcdTx.attributes = new TransactionAttribute[1];
 			rcdTx.attributes[0] = new TransactionAttribute();
-			rcdTx.attributes[0].usage = TransactionAttributeUsage.DescriptionUrl;
+			rcdTx.attributes[0].usage = TransactionAttributeUsage.Description;
 			rcdTx.attributes[0].data = (txDesc+new Date().toString()).getBytes();
 		}
 		rcdTx.scripts = new Script[0];
@@ -481,18 +497,8 @@ public class UserWalletManager {
 	 * @throws RestException
 	 */
 	public AssetInfo getAssetInfo(String assetid) throws RestException {
-		Transaction tx = restNode.getAsset(assetid);
-		if(tx instanceof RegisterTransaction) {
-			RegisterTransaction rr = (RegisterTransaction) tx;
-			AssetInfo info = new AssetInfo();
-			info.assetid = assetid;
-			info.assetname = rr.name;
-			info.regAmount = rr.amount.toLong();
-			info.register = Helper.toHexString(rr.issuer.getEncoded(true));
-			info.controller = rr.admin.toString();
-			return info;
-		}
-		return null;
+		String ss = restNode.getAsset(assetid);
+		return JSON.parseObject(ss, AssetInfo.class);
 	}
 	
 	/**
@@ -522,6 +528,7 @@ public class UserWalletManager {
 			in.address = Wallet.toAddress(p.scriptHash);
 			in.assetid = p.assetId.toString();
 			in.amount = p.value.toLong();
+			info.inputs.add(in);
 		});
 		info.outputs = new ArrayList<TxOutputInfo>();
 		Arrays.stream(tx.outputs).forEach(p -> {
@@ -529,6 +536,7 @@ public class UserWalletManager {
 			out.address = Wallet.toAddress(p.scriptHash);
 			out.assetid = p.assetId.toString();
 			out.amount = p.value.toLong();
+			info.outputs.add(out);
 		});
 		StringBuilder sb = new StringBuilder();
 		for(TransactionAttribute attr: tx.attributes) {

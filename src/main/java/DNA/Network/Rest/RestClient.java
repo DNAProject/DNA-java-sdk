@@ -27,6 +27,7 @@ public class RestClient {
 			return RestHttp.post(Consts.Url_send_transaction, params, body);
 		} catch (KeyManagementException | NoSuchAlgorithmException
 				| NoSuchProviderException | IOException e) {
+			e.printStackTrace();
 			throw new RestException("Invalid url:"+e.getMessage());
 		}
 	}
@@ -103,12 +104,18 @@ class Consts {
 	public static  String url = urls[1];
 	
 	public static void setRestUrl(String url) {
-		Url_send_transaction = url + Url_send_transaction;
-		Url_get_transaction = url + Url_get_transaction;
-		Url_get_asset = url + Url_get_asset;
-		Url_get_block_height = url + Url_get_block_height;
-		Url_get_block_By_Height = url + Url_get_block_By_Height;
-		Url_get_block_By_Hash = url + Url_get_block_By_Hash;
+//		Url_send_transaction = url + Url_send_transaction;
+//		Url_get_transaction = url + Url_get_transaction;
+//		Url_get_asset = url + Url_get_asset;
+//		Url_get_block_height = url + Url_get_block_height;
+//		Url_get_block_By_Height = url + Url_get_block_By_Height;
+//		Url_get_block_By_Hash = url + Url_get_block_By_Hash;
+		Url_send_transaction = url + "/api/v1/transaction";
+		Url_get_transaction = url + "/api/v1/transaction/";
+		Url_get_asset = url + "/api/v1/asset/";
+		Url_get_block_height = url + "/api/v1/block/height";
+		Url_get_block_By_Height = url + "/api/v1/block/details/height/";
+		Url_get_block_By_Hash = url + "/api/v1/block/details/hash/";
 	}
 
 	public static String Url_send_transaction = "/api/v1/transaction";

@@ -32,9 +32,11 @@ public enum TransactionType {
      *  合约交易，这是最常用的一种交易
      */
 //    ContractTransaction(0x80),
-    TransferTransaction(0x10),
+//    TransferTransaction(0x10), 
+    TransferTransaction(0x80), 
     
-    RecordTransaction(0x11),
+//    RecordTransaction(0x11),
+    RecordTransaction(0x81),
     /**
      *  委托交易
      */

@@ -28,9 +28,15 @@ public class TransactionInput implements Serializable,JsonSerializable {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (null == obj) return false;
-        if (!(obj instanceof TransactionInput)) return false;
+        if (this == obj) {
+        	return true;
+        }
+        if (null == obj) {
+        	return false;
+        }
+        if (!(obj instanceof TransactionInput)) {
+        	return false;
+        }
         TransactionInput other = (TransactionInput) obj;
         return prevHash.equals(other.prevHash) && prevIndex == other.prevIndex;
     }
@@ -47,16 +53,16 @@ public class TransactionInput implements Serializable,JsonSerializable {
 	public void deserialize(BinaryReader reader) throws IOException {
 		try {
 			prevHash = reader.readSerializable(UInt256.class);
-//			prevIndex = reader.readShort();
-			prevIndex = (short) reader.readVarInt();
+			prevIndex = reader.readShort();
+//			prevIndex = (short) reader.readVarInt();
 		} catch (InstantiationException | IllegalAccessException e) {
 		}
 	}
 	@Override
 	public void serialize(BinaryWriter writer) throws IOException {
 		writer.writeSerializable(prevHash);
-//		writer.writeShort(prevIndex);
-		writer.writeVarInt(prevIndex);
+		writer.writeShort(prevIndex);
+//		writer.writeVarInt(prevIndex);
 	}
 	
 	public JObject json() {

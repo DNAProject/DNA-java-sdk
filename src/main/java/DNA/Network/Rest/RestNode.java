@@ -48,18 +48,13 @@ public class RestNode {
 		throw new RestRuntimeException(rr.toString());
 	}
 	
-	public Transaction getAsset(String assetid) throws RestException {
+	public String getAsset(String assetid) throws RestException {
 		String rs = restClient.getAsset(authType, accessToken, assetid);
 		Result rr = JSON.parseObject(rs, Result.class);
 		if(rr.Error != 0) {
 			throw new RestRuntimeException(rr.toString());
 		}
-		try {
-			return Transaction.fromJsonD(new JsonReader(JObject.parse(rr.Result)));
-		} catch (IOException e) {
-			throw new RestRuntimeException("Transaction.fromJsonD(assetid) failed", e);
-		}
-		
+		return rr.Result;
 	}
 	
 	public int getBlockHeight() throws RestException {

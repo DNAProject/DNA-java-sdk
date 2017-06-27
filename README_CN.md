@@ -20,9 +20,17 @@
 
 ## 2 接入步骤
 
-***使用注册账户中提供的AppId和AppKey，从OAuthServer申请访问令牌，可参看Oauth手册。
+***使用注册账户中提供的AppId和AppKey，从OAuthServer申请访问令牌，可参考Oauth手册。
 
 ***调用sdk时，将该访问令牌作为其中一个初始化参数传递进来，实现数字资产的注册、分发、转移、存证、取证等操作。
+
+`注意事项一`：
+
+​	用户注册仅针对在联盟链或私有链有认证需求的场景下，公有链环境或者社区用户自行部署DNA的情况下无需参考Oauth手册，调用sdk时使用任意访问令牌token均可。
+
+`注意事项二`：
+
+​	DNA默认关闭认证选项，在有认证需求的场景下，需要将DNA认证选项打开，DNA的默认认证方式是OAuth。
 
 
 
@@ -51,15 +59,17 @@ List<String>  list = wm.createAccount(numCount);
 
 | 参数   | 字段         | 类型     | 说明            |
 | ---- | ---------- | ------ | ------------- |
-| 输入参数 | controller | String | 控制者地址         |
+| 输入参数 | issuer     | String | 发行者地址         |
 |      | name       | String | 资产名称          |
 |      | amount     | long   | 资产数量          |
 |      | desc       | String | 描述            |
+|      | controller | String | 控制者地址         |
+|      | precision  | int    | 精度            |
 | 输出参数 | txid       | String | 交易编号，这里代表资产编号 |
 
 eg：
 
-String assetid = wm.reg(controller, name, amount , desc);
+String assetid = wm.reg(issuer, name, amount , desc, controller, precision);
 
 
 
@@ -218,11 +228,13 @@ String url = "http://localhost:20334";
 String accessToken = "";				// 从认证服务器获取该访问令牌
 UserWalletManager wm = UserWalletManager.getWallet(path, url, accessToken);
 // 注册资产
-String controller= "";		// 资产控制者地址
+String issuer= "";		// 资产发行者地址
 String name = "";			// 资产名称
 long amount = 10000;		// 资产数量
 String desc = "";			// 描述
-String assetid = wm.reg(controller, name, amount , desc);
+String controller = "";		// 资产控制者地址
+int precision = 0;			// 精度
+String assetid = wm.reg(issuer, name, amount , desc, controller, precision);
 System.out.println("rs:"+assetid);
 ```
 
@@ -346,7 +358,7 @@ TransactionInfo info = wm.getTransactionInfo(txid);
 ## 5 错误代码
 
 | 返回代码  | 描述信息                | 说明                |
-| ----- | ------------------- | ----------------- |
+| :---- | ------------------- | ----------------- |
 | 0     | SUCCESS             | 成功                |
 | 41001 | SESSION_EXPIRED     | 会话无效或已过期（ 需要重新登录） |
 | 41002 | SERVICE_CEILING     | 达到服务上限            |
@@ -356,4 +368,10 @@ TransactionInfo info = wm.getTransactionInfo(txid);
 | 42003 | INVALID_TOKEN       | 无效的令牌             |
 | 43001 | INVALID_TRANSACTION | 无效的交易             |
 | 43002 | INVALID_ASSET       | 无效的资产             |
+| 43003 | INVALID_BLOCK       | 无效的块              |
+| 44001 | UNKNOWN_TRANSACTION | 找不到交易             |
+| 44002 | UNKNOWN_ASSET       | 找不到资产             |
+| 44003 | UNKNOWN_BLOCK       | 找不到块              |
+| 45001 | INVALID_VERSION     | 协议版本错误            |
+| 45002 | INTERNAL_ERROR      | 内部错误              |
 
