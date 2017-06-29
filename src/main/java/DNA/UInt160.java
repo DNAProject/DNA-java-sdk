@@ -36,6 +36,7 @@ public class UInt160 extends UIntBase implements Comparable<UInt160> {
         }
         byte[] v = Helper.hexToBytes(value);
         return new UInt160(Helper.reverse(v));
+//        return new UInt160(v);
     }
 
     public static boolean tryParse(String s, UInt160 result) {
