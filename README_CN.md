@@ -23,9 +23,7 @@
 DNA默认关闭认证选项，使用SDK可以直接访问DNA。在联盟链或私有链有认证要求的场景下，您需要首先完成用户注册，并获取授权accessToken才能访问应用。用户注册和获取Token请参考: [https://forum.dnaproject.org/t/dna/112](https://forum.dnaproject.org/t/dna/112)。
 
 ### 2.2  SDK调用
-
 调用sdk时，将该访问令牌(非联盟链可任意)作为其中一个初始化参数传递进来，实现数字资产的注册、分发、转移、存证、取证等操作。
-
 
 
 ## 3 参数信息说明##
@@ -60,6 +58,7 @@ List<String>  list = wm.createAccount(numCount);
 |      | controller | String | 控制者地址         | 地址是以A开头的34位字符串 |
 |      | precision  | int    | 精度            | int类型占4字节      |
 | 输出参数 | txid       | String | 交易编号，这里代表资产编号 | 交易编号是64位字符串    |
+
 
 eg：
 

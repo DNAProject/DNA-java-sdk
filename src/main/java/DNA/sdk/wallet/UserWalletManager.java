@@ -8,6 +8,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.alibaba.fastjson.JSON;
+
 import DNA.Fixed8;
 import DNA.Helper;
 import DNA.UInt160;
@@ -33,6 +35,7 @@ import DNA.Network.Rest.RestNode;
 import DNA.Wallets.Account;
 import DNA.Wallets.Contract;
 import DNA.Wallets.Wallet;
+import DNA.sdk.helper.OnChainSDKHelper;
 import DNA.sdk.info.asset.AssetInfo;
 import DNA.sdk.info.transaction.TransactionInfo;
 import DNA.sdk.info.transaction.TxInputInfo;
@@ -300,6 +303,7 @@ public class UserWalletManager {
 		}
 		uw.saveTransaction(signedTx4Trf);
 		String txHex = Helper.toHexString(signedTx4Trf.toArray());;
+		OnChainSDKHelper.printTransaction(signedTx4Trf);
 		boolean f6 = restNode.sendRawTransaction(action, version, type, txHex);
 		
 		String txid4Trf = signedTx4Trf.hash().toString();
@@ -485,8 +489,8 @@ public class UserWalletManager {
 		tx.name = assetName;	
 		tx.amount = Fixed8.parse(String.valueOf(assetAmount));	
 		tx.issuer = acc.publicKey;	
-//		tx.admin = Wallet.toScriptHash(controller); 
-		tx.admin = Wallet.toScriptHash(Contract.createSignatureContract(acc.publicKey).address()); 
+		tx.admin = Wallet.toScriptHash(controller); 
+//		tx.admin = Wallet.toScriptHash(Contract.createSignatureContract(acc.publicKey).address()); 
 		tx.outputs = new TransactionOutput[0];
 		if(txDesc != null && txDesc.length() > 0) {
 			tx.attributes = new TransactionAttribute[1];
