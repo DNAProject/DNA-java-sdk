@@ -114,6 +114,7 @@ public class RegisterTransaction extends Transaction {
 	        		new BigInteger(toPlainString(json.get("Issuer").get("X").asString())), 
 	        		new BigInteger(toPlainString(json.get("Issuer").get("Y").asString())));
 			admin = new UInt160(Helper.hexToBytes(json.get("Controller").asString()));
+//			admin = UInt160.parse(json.get("Controller").asString());
             if (precision < 0 || precision > 8) 
             	throw new RuntimeException();
 	        if(recordType == null) 
