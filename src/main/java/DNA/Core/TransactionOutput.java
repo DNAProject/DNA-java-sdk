@@ -40,9 +40,6 @@ public class TransactionOutput implements Serializable,JsonSerializable {
 			assetId = reader.readSerializable(UInt256.class);
 			value = reader.readSerializable(Fixed8.class);
 			scriptHash = reader.readSerializable(UInt160.class);
-			
-//			if (value.compareTo(Fixed8.ZERO) <= 0)
-//				throw new IOException();
 		} catch (InstantiationException | IllegalAccessException e) {
 			throw new IOException();
 		}
@@ -74,6 +71,9 @@ public class TransactionOutput implements Serializable,JsonSerializable {
 		assetId = new UInt256(Helper.hexToBytes(json.get("AssetID").asString()));
 		value = new Fixed8((long)json.get("Value").asNumber());
 		scriptHash = new UInt160(Helper.hexToBytes(json.get("ProgramHash").asString()));
+//		assetId = UInt256.parse(json.get("AssetID").asString());
+//		value = new Fixed8((long)json.get("Value").asNumber());
+//		scriptHash = UInt160.parse(json.get("ProgramHash").asString());
 	}
 	
 	@Override
