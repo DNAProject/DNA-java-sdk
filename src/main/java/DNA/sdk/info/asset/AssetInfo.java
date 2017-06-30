@@ -16,5 +16,4 @@ public class AssetInfo {
 	public int Precision;
 	public int AssetType;
 	public int RecordType;
-//	"Result":{"Name":"Token001","Precision":0,"AssetType":17,"RecordType":0}
 }
