@@ -1,5 +1,12 @@
 package DNA;
 
+/**
+ * SDK Version Info
+ * 
+ * @author 12146
+ * @since  JDK1.8
+ *
+ */
 public class IVersion {
 	private static final String version = "v0.6.1";
 	public static final String[] versionInfo = new String[] {

@@ -1,5 +1,6 @@
 package DNA;
 
+
 public class UInt160 extends UIntBase implements Comparable<UInt160> {
     public static final UInt160 ZERO = new UInt160();
 

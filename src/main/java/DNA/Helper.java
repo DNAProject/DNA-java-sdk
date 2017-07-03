@@ -1,5 +1,11 @@
 package DNA;
 
+/**
+ * Byte Handle Helper
+ * 
+ * @author 12146
+ * @since  JDK1.8
+ */
 public class Helper {
 	public static String getbyteStr(byte[] bs)  {
     	StringBuilder sb = new StringBuilder();

@@ -28,7 +28,7 @@ DNA默认关闭认证选项，使用SDK可以直接访问DNA。在联盟链或�
 
 
 
-## 3 参数信息说明##
+## 3 接口说明##
 
 调用每一个接口方法之前必须实例化账户管理器，后续的接口都是基于账户管理来调用的。实例化账户管理器所需参数包括：连接地址url，账户存储位置路径path，访问令牌accessToken。
 
@@ -231,7 +231,43 @@ eg：
 
 TransactionInfo info = wm.getTransactionInfo(txid);
 
+### 3.11 解析块
 
+| 参数   | 字段    | 类型     | 描述        | 说明                           |
+| ---- | ----- | ------ | --------- | ---------------------------- |
+| 输入参数 | dat   | String | json格式块信息 | 该数据是用户通过websocket获取到的Block数据 |
+| 输出参数 | block | Block  | 区块信息      | 该类型定义区块的基本信息，包括高度/哈希值/交易等    |
+
+| 自定义类型                | 子字段          | 子类型                       | 描述          | 说明        |
+| -------------------- | ------------ | ------------------------- | ----------- | --------- |
+| Block                | version      | int                       | 版本信息        | 目前为0      |
+|                      | prevBlock    | UInt256                   | 前一个区块散列值    | 32位byte数组 |
+|                      | merkleRoot   | UInt256                   | 区块所有交易默克尔树根 | 32位byte数组 |
+|                      | timestamp    | int                       | 时间戳         | 4字节int类型  |
+|                      | height       | int                       | 区块高度        | 4字节int类型  |
+|                      | nonce        | long                      | 随机数         | 8字节long类型 |
+|                      | nextMiner    | UInt160                   | 下一个记账合约地址   | 20位byte数组 |
+|                      | script       | Script                    | 验证脚本        | 签名验证脚本    |
+|                      | transactions | Transaction[]             | 交易列表        | 区块交易列表    |
+| Script               | stackScript  | byte[]                    | 签名信息        | 签名信息      |
+|                      | redeemScript | byte[]                    | 公钥信息        | 公钥信息      |
+| Transaction          | type         | TransactionType           | 交易类型        | byte单字节   |
+|                      | nonce        | long                      | 随机数         | 8字节long类型 |
+|                      | attributes   | TransactionAttribute      | 交易特性        | 自定义类型     |
+|                      | inputs       | TransactionInput          | 交易输入        | 自定义类型     |
+|                      | outputs      | TransactionOutput         | 交易输出        | 自定义类型     |
+|                      | script       | Script                    | 验证脚本        | 签名验证脚本    |
+| TransactionAttribute | usage        | TransactionAttributeUsage | 用途          | byte单字节   |
+|                      | data         | byte[]                    | 描述          | byte[]数组  |
+| TransactionInput     | prevHash     | UInt256                   | 引用交易散列值     | 32位byte数组 |
+|                      | prevIndex    | short                     | 引用交易输出索引    | 2字节类型     |
+| TransactionOutput    | assetId      | UInt256                   | 资产编号        | 32位byte数组 |
+|                      | value        | Fixed8                    | 数量          | long类型封装  |
+|                      | scriptHash   | UInt160                   | 收款地址        | 20位byte数组 |
+
+eg:
+
+Block block = UserWalletManager.fromWebSocketData(dat);
 
 ## 4 调用示例
 
@@ -408,15 +444,25 @@ String txid = "";
 TransactionInfo info = wm.getTransactionInfo(txid);
 ```
 
+### 4.11 解析块
+
+```
+// 解析json为block类型
+String dat = "";					// 该数据为用户通过websocket方式获取到块信息的json格式数据
+Block block = UserWalletManager.from(dat);	
+```
 
 
-## 4 开发说明
+
+
+
+## 5 开发说明
 
 ​	该SDK供客户端使用，其中含有账户信息的管理，比如合约地址、公钥、私钥，这些信息保存至客户端数据库中。具体的数据库可根据需求自由选择，目前实现的数据库有sqlite、mysql，sqlite是一个文件数据库，初始化时需要传递路径，上面的示例是根据该sqlite保存账户信息的数据库实现给出的，mysql使用时还需要创建对应的表，以及实现具体的数据库连接。通过SDK接入DNA区块链时，可以直接使用当前的Sqlite数据库保存账户的公私钥信息的UserWalletManager，也可自己实现一个账户管理器来管理账户私密信息。自己实现账户管理器可参考DNA.Implementations.Wallets.SQLite.UserWallet类和DNA.Implementations.Wallets.Mysql.WebWallet类。
 
 
 
-## 5 错误代码
+## 6 错误代码
 
 | 返回代码  | 描述信息                | 说明                |
 | :---- | ------------------- | ----------------- |
