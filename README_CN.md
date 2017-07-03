@@ -16,11 +16,15 @@
 
 
 
+
+
 ## 2 接入步骤
 
 ### 2.1  OAuth认证
 
 DNA默认关闭认证选项，使用SDK可以直接访问DNA。在联盟链或私有链有认证要求的场景下，您需要首先完成用户注册，并获取授权accessToken才能访问应用。用户注册和获取Token请参考: [https://forum.dnaproject.org/t/dna/112](https://forum.dnaproject.org/t/dna/112)。
+
+
 
 ### 2.2  SDK调用
 
@@ -28,11 +32,13 @@ DNA默认关闭认证选项，使用SDK可以直接访问DNA。在联盟链或�
 
 
 
+
+
 ## 3 接口说明##
 
 调用每一个接口方法之前必须实例化账户管理器，后续的接口都是基于账户管理来调用的。实例化账户管理器所需参数包括：连接地址url，账户存储位置路径path，访问令牌accessToken。
 
-### 3.1 创建账户###
+### 3.1 创建账户
 
 通过传递一个int类型的数值，可以创建多个账户合约，以合约地址列表形式返回。
 
@@ -47,7 +53,7 @@ List<String>  list = wm.createAccount(numCount);
 
 
 
-### 3.2 注册资产###
+### 3.2 注册资产
 
 通过传递资产的基本信息来产生一笔区块链上合法的资产，返回资产编号。后续的资产类操作就可以使用该资产编号。
 
@@ -67,7 +73,7 @@ String assetid = wm.reg(issuer, name, amount , desc, controller, precision);
 
 
 
-### 3.3 分发资产###
+### 3.3 分发资产
 
 通过传递分发资产的基本信息来完成一笔资产的分发操作，返回交易编号。
 
@@ -86,7 +92,7 @@ String txid = wm.iss(controller, assetid, amount , recver , desc );
 
 
 
-### 3.4 转移资产###
+### 3.4 转移资产
 
 通过传递分发资产的基本信息来完成一笔资产的分发操作，返回交易编号。
 
@@ -105,7 +111,7 @@ String txid = wm.trf(controller, assetid, amount , recver , desc );
 
 
 
-### 3.5 存证###
+### 3.5 存证
 
 通过传递存证交易的基本信息来完成一笔资产的分发操作，返回交易编号。
 
@@ -121,7 +127,7 @@ String txid = wm.storeCert(content, desc);
 
 
 
-### 3.6 取证###
+### 3.6 取证
 
 查询类操作，传递存证时的交易编号，输出具体存证内容
 
@@ -136,7 +142,7 @@ String content= wm.queryCert(txid);
 
 
 
-### 3.7 账户信息###
+### 3.7 账户信息
 
 查询类操作，传递账户地址，输出账户具体信息
 
@@ -159,7 +165,7 @@ AccountInfo info = wm.getAccountInfo(address);
 
 
 
-### 3.8 账户资产###
+### 3.8 账户资产
 
 查询类操作。传递账户地址，输出账户资产详情
 
@@ -182,7 +188,7 @@ AccountAsset info = wm.getAccountAsset(userAddr);
 
 
 
-### 3.9 资产信息###
+### 3.9 资产信息
 
 查询类操作。传递资产编号，输出资产详情。
 
@@ -204,7 +210,7 @@ AssetInfo info = wm.getAssetInfo(assetid);
 
 
 
-### 3.10 交易信息###
+### 3.10 交易信息
 
 查询类操作。传递交易编号，返回交易具体信息。
 
@@ -230,6 +236,8 @@ AssetInfo info = wm.getAssetInfo(assetid);
 eg：
 
 TransactionInfo info = wm.getTransactionInfo(txid);
+
+
 
 ### 3.11 解析块
 
@@ -269,6 +277,10 @@ eg:
 
 Block block = UserWalletManager.fromWebSocketData(dat);
 
+
+
+
+
 ## 4 调用示例
 
 ### 4.1 创建账户
@@ -277,7 +289,7 @@ Block block = UserWalletManager.fromWebSocketData(dat);
 // 打开账户管理器
 String path = "./dat/tsGo_01.db3";
 String url = "http://localhost:20334";
-String accessToken = "";				// 从认证服务器获取该访问令牌，非联盟链可任意填写
+String accessToken = "";				// 非必需项，如开启OAuth认证，则需要填写
 UserWalletManager wm = UserWalletManager.getWallet(path, url, accessToken);
 // 创建账户
 String user01 = wm.createAccount();			// 创建单个账户
@@ -292,7 +304,7 @@ System.out.println("list:"+list);
 // 打开账户管理器
 String path = "./dat/tsGo_01.db3";
 String url = "http://localhost:20334";
-String accessToken = "";				// 从认证服务器获取该访问令牌，非联盟链可任意填写
+String accessToken = "";				// 非必需项，如开启OAuth认证，则需要填写
 UserWalletManager wm = UserWalletManager.getWallet(path, url, accessToken);
 // 方式1：注册资产
 String issuer= "";		// 资产发行者地址
@@ -321,7 +333,7 @@ System.out.println("rs1:"+rr+",txid:"+tx.hash().toString());
 // 打开账户管理器
 String path = "./dat/tsGo_01.db3";
 String url = "http://localhost:20334";
-String accessToken = "";				// 从认证服务器获取该访问令牌，非联盟链可任意填写
+String accessToken = "";				// 非必需项，如开启OAuth认证，则需要填写
 UserWalletManager wm = UserWalletManager.getWallet(path, url, accessToken);
 // 方式1：分发资产
 String controller= "";		// 资产控制者地址
@@ -349,7 +361,7 @@ System.out.println("rs2:"+rr+",txid:"+tx.hash().toString());
 // 打开账户管理器
 String path = "./dat/tsGo_01.db3";
 String url = "http://localhost:20334";
-String accessToken = "";				// 从认证服务器获取该访问令牌，非联盟链可任意填写
+String accessToken = "";				// 非必需项，如开启OAuth认证，则需要填写
 UserWalletManager wm = UserWalletManager.getWallet(path, url, accessToken);
 // 方式1：转移资产
 String controller= "";		// 资产控制者地址
@@ -376,7 +388,7 @@ System.out.println("rs2:"+rr+",txid:"+tx.hash().toString());
 ```
 // 打开账户管理器
 String url = "http://localhost:20334";
-String accessToken = "";				// 从认证服务器获取该访问令牌，非联盟链可任意填写
+String accessToken = "";				// 非必需项，如开启OAuth认证，则需要填写
 UserWalletManager wm = UserWalletManager.getWallet(url, accessToken);
 // 方式1：存证
 String content = "";		// 待存储的信息
@@ -390,7 +402,7 @@ System.out.println("rs:"+txid);
 ```
 // 打开账户管理器
 String url = "http://localhost:20334";
-String accessToken = "";				// 从认证服务器获取该访问令牌，非联盟链可任意填写
+String accessToken = "";				// 非必需项，如开启OAuth认证，则需要填写
 UserWalletManager wm = UserWalletManager.getWallet(url, accessToken);
 // 取证
 String txid = "";		// 存证编号
@@ -425,7 +437,7 @@ AccountAsset info = wm.getAccountAsset(userAddr);
 ```
 // 打开账户管理器
 String url = "http://localhost:20334";
-String accessToken = "";				// 从认证服务器获取该访问令牌，非联盟链可任意填写
+String accessToken = "";				// 非必需项，如开启OAuth认证，则需要填写
 UserWalletManager wm = UserWalletManager.getWallet(url, accessToken);
 // 查询账户资产
 String assetid = "";
@@ -437,7 +449,7 @@ AssetInfo info = wm.getAssetInfo(assetid);
 ```
 // 打开账户管理器
 String url = "http://localhost:20334";
-String accessToken = "";				// 从认证服务器获取该访问令牌，非联盟链可任意填写
+String accessToken = "";				// 非必需项，如开启OAuth认证，则需要填写
 UserWalletManager wm = UserWalletManager.getWallet(url, accessToken);
 // 查询账户资产
 String txid = "";
@@ -448,7 +460,7 @@ TransactionInfo info = wm.getTransactionInfo(txid);
 
 ```
 // 解析json为block类型
-String dat = "";					// 该数据为用户通过websocket方式获取到块信息的json格式数据
+String dat = "";				// 该数据为用户通过websocket方式或者通过rest方式获取到块信息的json格式数据
 Block block = UserWalletManager.from(dat);	
 ```
 
