@@ -1,20 +1,43 @@
 package DNA.Wallets;
 
 import java.lang.Thread.State;
-import java.nio.*;
-import java.util.*;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
-import java.util.stream.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import javax.crypto.*;
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
 
 import org.bouncycastle.math.ec.ECPoint;
 
-import DNA.*;
-import DNA.Core.*;
+import DNA.Fixed8;
+import DNA.UInt160;
+import DNA.UInt256;
+import DNA.Core.Block;
+import DNA.Core.Blockchain;
+import DNA.Core.ClaimTransaction;
+import DNA.Core.IssueTransaction;
+import DNA.Core.SignatureContext;
+import DNA.Core.Transaction;
+import DNA.Core.TransactionAttribute;
+import DNA.Core.TransactionInput;
+import DNA.Core.TransactionOutput;
+import DNA.Core.TransactionType;
 import DNA.Core.Scripts.Script;
-import DNA.Cryptography.*;
-import DNA.IO.Caching.*;
+import DNA.Cryptography.AES;
+import DNA.Cryptography.Base58;
+import DNA.Cryptography.Digest;
+import DNA.Cryptography.ECC;
+import DNA.IO.Caching.TrackState;
+import DNA.IO.Caching.TrackableCollection;
 
 public abstract class Wallet implements AutoCloseable {
 
@@ -28,7 +51,7 @@ public abstract class Wallet implements AutoCloseable {
 
     private String path;
     private Thread thread;
-    private boolean isrunning = true;
+    private boolean isrunning = false;
 
     protected final Object locker = new Object();
     
@@ -76,10 +99,13 @@ public abstract class Wallet implements AutoCloseable {
      * 启动同步线程
      */
     public void start() {
-      this.thread = new Thread(this::processBlocks);
-      this.thread.setDaemon(true);
-      this.thread.setName("Wallet.ProcessBlocks");
-      this.thread.start();
+    	if(!isrunning) {
+    		isrunning = true;
+    		this.thread = new Thread(this::processBlocks);
+    		this.thread.setDaemon(true);
+    		this.thread.setName("Wallet.ProcessBlocks");
+    		this.thread.start();
+    	}
     }
     
     /**
@@ -453,22 +479,26 @@ public abstract class Wallet implements AutoCloseable {
 				} catch (Exception ex) {
 					break;
 				}
-            	if (current_height > height || !isrunning)
+            	if (current_height > height || !isrunning) {
             		break;
+            	}
                 synchronized (locker) {
                     Block block;
 					try {
 						block = blockchain.getBlock(current_height);
 					} catch (Exception ex) {
+						ex.printStackTrace();
 						break;
 					}
-                    if (block != null) 
+                    if (block != null) {
                     	processNewBlock(block);
+                    }
                 }
             }
             try {
-	            for (int i = 0; i < 20 && isrunning; i++)
+	            for (int i = 0; i < 20 && isrunning; i++) {
 	                Thread.sleep(100);
+	            }
             } catch (InterruptedException ex) {
             	break;
             }
@@ -505,11 +535,7 @@ public abstract class Wallet implements AutoCloseable {
                 for (Transaction tx : block.transactions) {
                     for (TransactionInput input : tx.getAllInputs().toArray(TransactionInput[]::new)) {
                         if (coins.containsKey(input)) {
-//                        	Coin coin = coins.get(input);
-//                            if (coin.assetId.equals(Blockchain.ANTSHARE.hash()))
-//                            	coin.setState(CoinState.Spent);
-//                            else
-                                coins.remove(input);
+                        	coins.remove(input);
                         }
                     }
                 }
@@ -521,7 +547,7 @@ public abstract class Wallet implements AutoCloseable {
                         }
                     }
                 }
-             // 2. 更新入库coin/tx/height
+                // 2. 更新入库coin/tx/height
                 changeset = coins.getChangeSet(Coin[]::new);
                 Coin[] added = Arrays.stream(changeset).filter(p -> p.getTrackState() == TrackState.Added).toArray(Coin[]::new);
                 Coin[] changed = Arrays.stream(changeset).filter(p -> p.getTrackState() == TrackState.Changed).toArray(Coin[]::new);

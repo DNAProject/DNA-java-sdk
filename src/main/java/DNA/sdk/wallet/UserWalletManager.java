@@ -44,6 +44,8 @@ import DNA.sdk.sdk.info.account.AccountAsset;
 import DNA.sdk.sdk.info.account.AccountInfo;
 import DNA.sdk.sdk.info.account.Asset;
 
+import com.alibaba.fastjson.JSON;
+
 
 /**
  * 账户管理器(sqlite 存储)
@@ -98,6 +100,9 @@ public class UserWalletManager {
 	}
 	private void startSync() {
 		uw.start();
+	}
+	public void stopSync() {
+		uw.close();;
 	}
 	private void initRestNode(String url) {
 		restNode = new RestNode(url);
@@ -164,10 +169,12 @@ public class UserWalletManager {
 	/**
 	 * 注册资产
 	 * 
-	 * @param issuer	资产控制者
+	 * @param issuer	资产发行者地址
 	 * @param name		资产名称
 	 * @param amount	资产数量
 	 * @param desc		描述
+	 * @param controller 资产控制者地址
+	 * @param precision	 精度
 	 * @return	交易编号
 	 * @throws Exception
 	 */
@@ -177,31 +184,35 @@ public class UserWalletManager {
 	/**
 	 * 注册Token资产
 	 * 
-	 * @param issuer	资产控制者
+	 * @param issuer	资产发行者地址
 	 * @param name		资产名称
 	 * @param amount	资产数量
 	 * @param desc		描述
+	 * @param controller 资产控制者地址
+	 * @param precision	 精度
 	 * @return	交易编号
 	 * @throws Exception
 	 */
 	public String regToken(String issuer, String name, long amount, String desc, String controller, int precision) throws Exception {
 		return regToken(getAccount(issuer), name, amount, desc, controller, precision);
 	}
+	public String regToken(Account acc, String assetName, long assetAmount, String txDesc, String controller, int precision) throws Exception {
+		return reg(getRegTx(acc, assetName, assetAmount, txDesc, AssetType.Token, controller, precision));
+	}
 	/**
 	 * 注册Share资产
 	 * 
-	 * @param issuer	资产控制者
+	 * @param issuer	资产发行者地址
 	 * @param name		资产名称
 	 * @param amount	资产数量
 	 * @param desc		描述
+	 * @param controller 资产控制者地址
+	 * @param precision	 精度
 	 * @return	交易编号
 	 * @throws Exception
 	 */
 	public String regShare(String issuer, String name, long amount, String desc, String controller, int precision) throws Exception {
 		return regShare(getAccount(issuer), name, amount, desc, controller, precision);
-	}
-	public String regToken(Account acc, String assetName, long assetAmount, String txDesc, String controller, int precision) throws Exception {
-		return reg(getRegTx(acc, assetName, assetAmount, txDesc, AssetType.Token, controller, precision));
 	}
 	public String regShare(Account acc, String assetName, long assetAmount, String txDesc, String controller, int precision) throws Exception {
 		return reg(getRegTx(acc, assetName, assetAmount, txDesc, AssetType.Share, controller, precision));
@@ -303,6 +314,92 @@ public class UserWalletManager {
 		return txid4Trf;
 	}
 	
+	
+	
+	// 1. 构造交易
+	/**
+	 * 构造注册资产交易
+	 * 
+	 * @param issuer	资产控制者
+	 * @param name		资产名称
+	 * @param amount	资产数量
+	 * @param desc		描述
+	 * @return	交易编号
+	 * @throws Exception
+	 */
+	public RegisterTransaction createRegTx(String issuer, String name, long amount, String desc, String controller, int precision) {
+		return uw.makeTransaction(getRegTx(getAccount(issuer), name, amount, desc, AssetType.Token, controller, precision), Fixed8.ZERO);
+	}
+	/**
+	 * 构造分发资产交易
+	 * 
+	 * @param sendAddr	资产控制者地址
+	 * @param assetid	资产编号
+	 * @param amount	资产数量
+	 * @param recvAddr	接收者地址
+	 * @param desc		描述
+	 * @return	交易编号
+	 * @throws Exception
+	 */
+	public IssueTransaction createIssTx(String sendAddr, String assetid, long amount, String recvAddr, String desc) {
+		return uw.makeTransaction(getIssTx(assetid, amount, recvAddr, recvAddr), Fixed8.ZERO);
+	}
+	/**
+	 * 构造转移资产交易
+	 * 
+	 * @param sendAddr	资产控制者地址
+	 * @param assetid	资产编号
+	 * @param amount	资产数量
+	 * @param recvAddr	接收者地址
+	 * @param desc		描述
+	 * @return	交易编号
+	 * @throws Exception
+	 */
+	public TransferTransaction createTrfTx(String sendAddr, String assetid, long amount, String recvAddr, String desc) {
+		return uw.makeTransaction(getTrfTx(assetid, amount, recvAddr, desc), Fixed8.ZERO, getAddress(sendAddr));
+	}
+	// 2. 交易签名
+	/**
+	 * 交易签名
+	 * 
+	 * @param tx	待签名的交易
+	 * @return	签名完成且序列化后的交易
+	 */
+	public String signTx(DNA.Core.Transaction tx) {
+		SignatureContext context = new SignatureContext(tx);
+		boolean f5 = uw.sign(context);
+		if(f5 && context.isCompleted()){
+			tx.scripts = context.getScripts();
+		} else {
+			throw new RuntimeException("Signature incompleted");
+		}
+		uw.saveTransaction(tx);
+		String txHex = Helper.toHexString(tx.toArray());
+		return txHex;
+	}
+	// 3. 发送交易
+	/**
+	 * 发送交易
+	 * 
+	 * @param tx	待发送的交易
+	 * @return		发送成功与否
+	 * @throws RestException
+	 */
+	public boolean sendTx(DNA.Core.Transaction tx) throws RestException {
+		return sendTx(Helper.toHexString(tx.toArray()));
+	}
+	/**
+	 * 发送交易
+	 * 
+	 * @param txHex	签名完成的交易
+	 * @return		发送成功与否
+	 * @throws RestException
+	 */
+	public boolean sendTx(String txHex) throws RestException {
+		return restNode.sendRawTransaction(action, version, type, txHex);
+	}
+	
+	
 	/**
 	 * 存证
 	 * 
@@ -352,6 +449,15 @@ public class UserWalletManager {
 	// 获取地址
 	private UInt160 getAddress(String address) {
 		return Wallet.toScriptHash(address);
+	}
+	
+	/**
+	 * 等待该笔交易同步至账户管理器中
+	 * 
+	 * @param txid
+	 */
+	public void wait(String txid) {
+		wait(uw, txid);
 	}
 	// 等待Tx生效
 	private void wait(Wallet uw, String txid) {
@@ -406,6 +512,8 @@ public class UserWalletManager {
 			tx.attributes[0] = new TransactionAttribute();
 			tx.attributes[0].usage = TransactionAttributeUsage.Description;
 			tx.attributes[0].data = (txDesc+new Date().toString()).getBytes();
+		} else {
+			tx.attributes = new TransactionAttribute[0];
 		}
 		return tx;
 	}
@@ -439,8 +547,11 @@ public class UserWalletManager {
 			rcdTx.attributes[0] = new TransactionAttribute();
 			rcdTx.attributes[0].usage = TransactionAttributeUsage.Description;
 			rcdTx.attributes[0].data = (txDesc+new Date().toString()).getBytes();
+		}  else {
+			rcdTx.attributes = new TransactionAttribute[0];
 		}
 		rcdTx.scripts = new Script[0];
+		System.out.println("txid.len="+rcdTx.hash().toString().length());
 		return rcdTx;
 	}
 	
