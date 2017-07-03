@@ -7,8 +7,12 @@ import java.util.function.Function;
 import DNA.IO.*;
 
 /**
- * 精确到10^-8的64位定点数，将舍入误差降到最低。
- * 通过控制乘数的精度，可以完全消除舍入误差。
+ * Number type in block. this type Can be accurate to 64-bit fixed-point, the rounding 
+ * error to a minimum. By controlling the multiplier's accuracy, 
+ * the rounding error can be completely eliminated
+ * 
+ * @author 12146
+ * @since  JDK1.8
  */
 public class Fixed8 implements Comparable<Fixed8>, Serializable {
     private static final long D = 100000000L;

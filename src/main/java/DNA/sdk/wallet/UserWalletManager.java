@@ -8,13 +8,12 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.alibaba.fastjson.JSON;
-
 import DNA.Fixed8;
 import DNA.Helper;
 import DNA.UInt160;
 import DNA.UInt256;
 import DNA.Core.AssetType;
+import DNA.Core.Block;
 import DNA.Core.Blockchain;
 import DNA.Core.IssueTransaction;
 import DNA.Core.RecordTransaction;
@@ -35,7 +34,7 @@ import DNA.Network.Rest.RestNode;
 import DNA.Wallets.Account;
 import DNA.Wallets.Contract;
 import DNA.Wallets.Wallet;
-import DNA.sdk.helper.OnChainSDKHelper;
+import DNA.Websocket.Utils.GetBlockTransactionUtils;
 import DNA.sdk.info.asset.AssetInfo;
 import DNA.sdk.info.transaction.TransactionInfo;
 import DNA.sdk.info.transaction.TxInputInfo;
@@ -48,7 +47,7 @@ import com.alibaba.fastjson.JSON;
 
 
 /**
- * 账户管理器(sqlite 存储)
+ * Account Manager (sqlite)
  * 
  * @author 12146
  *
@@ -303,7 +302,6 @@ public class UserWalletManager {
 		}
 		uw.saveTransaction(signedTx4Trf);
 		String txHex = Helper.toHexString(signedTx4Trf.toArray());;
-		OnChainSDKHelper.printTransaction(signedTx4Trf);
 		boolean f6 = restNode.sendRawTransaction(action, version, type, txHex);
 		
 		String txid4Trf = signedTx4Trf.hash().toString();
@@ -666,5 +664,9 @@ public class UserWalletManager {
 			throw new RuntimeException("Not find tx by next txInput");
 		}
 		return tx.outputs[input.prevIndex];
+	}
+	
+	public static Block fromWebSocketData(String ss) {
+		return GetBlockTransactionUtils.from(ss);
 	}
 }
