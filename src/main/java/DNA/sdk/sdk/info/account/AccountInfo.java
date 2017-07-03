@@ -1,7 +1,7 @@
 package DNA.sdk.sdk.info.account;
 
 /**
- * 账户信息
+ * Account Infomation
  * 
  * @author 12146
  *
