@@ -43,8 +43,7 @@ public class UInt256 extends UIntBase implements Comparable<UInt256> {
             throw new IllegalArgumentException(String.format("字符串\"{0}\"无法识别为正确的UInt256。", s));
         }
         byte[] v = Helper.hexToBytes(s);
-//        return new UInt256(Helper.reverse(v));
-        return new UInt256(v); 
+        return new UInt256(Helper.reverse(v));
     }
 
     public static boolean tryParse(String s, UInt256 result) {
