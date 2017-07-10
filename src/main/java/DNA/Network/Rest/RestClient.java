@@ -32,10 +32,11 @@ public class RestClient {
 		}
 	}
 	
-	public String getTransaction2(String authType, String accessToken, String txid) throws RestException {
+	public String getTransaction(String authType, String accessToken, String txid) throws RestException {
 		Map<String, String> params = new HashMap<String, String>();
 		params.put("auth_type", authType);
 		params.put("access_token", accessToken);
+		params.put("raw", "1");
 		try {
 			return RestHttp.get(Consts.Url_get_transaction + txid, params);
 		} catch (KeyManagementException | NoSuchAlgorithmException
@@ -68,42 +69,6 @@ public class RestClient {
 		}
 	}
 	
-	public String getBlock2(String authType, String accessToken, int height) throws RestException {
-		Map<String, String> params = new HashMap<String, String>();
-		params.put("auth_type", authType);
-		params.put("access_token", accessToken);
-		try {
-			return RestHttp.get(Consts.Url_get_block_By_Height + height, params);
-		} catch (KeyManagementException | NoSuchAlgorithmException
-				| NoSuchProviderException | IOException e) {
-			throw new RestException("Invalid url:"+e.getMessage());
-		}
-	}
-	
-	public String getBlock2(String authType, String accessToken, String hash) throws RestException {
-		Map<String, String> params = new HashMap<String, String>();
-		params.put("auth_type", authType);
-		params.put("access_token", accessToken);
-		try {
-			return RestHttp.get(Consts.Url_get_block_By_Hash + hash, params);
-		} catch (KeyManagementException | NoSuchAlgorithmException
-				| NoSuchProviderException | IOException e) {
-			throw new RestException("Invalid url:"+e.getMessage());
-		}
-	}
-	// ****************************************************************************************************8
-	public String getTransaction(String authType, String accessToken, String txid) throws RestException {
-		Map<String, String> params = new HashMap<String, String>();
-		params.put("auth_type", authType);
-		params.put("access_token", accessToken);
-		params.put("raw", "1");
-		try {
-			return RestHttp.get(Consts.Url_get_transaction + txid, params);
-		} catch (KeyManagementException | NoSuchAlgorithmException
-				| NoSuchProviderException | IOException e) {
-			throw new RestException("Invalid url:"+e.getMessage());
-		}
-	}
 	public String getBlock(String authType, String accessToken, int height) throws RestException {
 		Map<String, String> params = new HashMap<String, String>();
 		params.put("auth_type", authType);
@@ -122,6 +87,41 @@ public class RestClient {
 		params.put("auth_type", authType);
 		params.put("access_token", accessToken);
 		params.put("raw", "1");
+		try {
+			return RestHttp.get(Consts.Url_get_block_By_Hash + hash, params);
+		} catch (KeyManagementException | NoSuchAlgorithmException
+				| NoSuchProviderException | IOException e) {
+			throw new RestException("Invalid url:"+e.getMessage());
+		}
+	}
+	// ****************************************************************************************************8
+	public String getTransactionJson(String authType, String accessToken, String txid) throws RestException {
+		Map<String, String> params = new HashMap<String, String>();
+		params.put("auth_type", authType);
+		params.put("access_token", accessToken);
+		try {
+			return RestHttp.get(Consts.Url_get_transaction + txid, params);
+		} catch (KeyManagementException | NoSuchAlgorithmException
+				| NoSuchProviderException | IOException e) {
+			throw new RestException("Invalid url:"+e.getMessage());
+		}
+	}
+	public String getBlockJson(String authType, String accessToken, int height) throws RestException {
+		Map<String, String> params = new HashMap<String, String>();
+		params.put("auth_type", authType);
+		params.put("access_token", accessToken);
+		try {
+			return RestHttp.get(Consts.Url_get_block_By_Height + height, params);
+		} catch (KeyManagementException | NoSuchAlgorithmException
+				| NoSuchProviderException | IOException e) {
+			throw new RestException("Invalid url:"+e.getMessage());
+		}
+	}
+	
+	public String getBlockJson(String authType, String accessToken, String hash) throws RestException {
+		Map<String, String> params = new HashMap<String, String>();
+		params.put("auth_type", authType);
+		params.put("access_token", accessToken);
 		try {
 			return RestHttp.get(Consts.Url_get_block_By_Hash + hash, params);
 		} catch (KeyManagementException | NoSuchAlgorithmException
