@@ -34,13 +34,13 @@ import DNA.Network.Rest.RestNode;
 import DNA.Wallets.Account;
 import DNA.Wallets.Contract;
 import DNA.Wallets.Wallet;
+import DNA.sdk.info.account.AccountAsset;
+import DNA.sdk.info.account.AccountInfo;
+import DNA.sdk.info.account.Asset;
 import DNA.sdk.info.asset.AssetInfo;
 import DNA.sdk.info.transaction.TransactionInfo;
 import DNA.sdk.info.transaction.TxInputInfo;
 import DNA.sdk.info.transaction.TxOutputInfo;
-import DNA.sdk.sdk.info.account.AccountAsset;
-import DNA.sdk.sdk.info.account.AccountInfo;
-import DNA.sdk.sdk.info.account.Asset;
 
 
 /**

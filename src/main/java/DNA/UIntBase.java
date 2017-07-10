@@ -6,6 +6,14 @@ import java.util.Arrays;
 
 import DNA.IO.*;
 
+/**
+ * Custom type base abstract class, it defines the storage and the serialization 
+ * and deserialization of actual data
+ * 
+ * @author 12146
+ * @since  JDK1.8
+ *
+ */
 public abstract class UIntBase implements Serializable {
     protected byte[] data_bytes;
 

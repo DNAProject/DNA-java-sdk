@@ -1,6 +1,13 @@
 package DNA;
 
-
+/**
+ * Custom type which inherits base class defines 32-bit data, 
+ * it mostly used to defined transaction identity
+ * 
+ * @author 12146
+ * @since  JDK1.8
+ *
+ */
 public class UInt256 extends UIntBase implements Comparable<UInt256> {
     public static final UInt256 ZERO = new UInt256();
 
@@ -37,7 +44,7 @@ public class UInt256 extends UIntBase implements Comparable<UInt256> {
         }
         byte[] v = Helper.hexToBytes(s);
 //        return new UInt256(Helper.reverse(v));
-        return new UInt256(v);
+        return new UInt256(v); 
     }
 
     public static boolean tryParse(String s, UInt256 result) {

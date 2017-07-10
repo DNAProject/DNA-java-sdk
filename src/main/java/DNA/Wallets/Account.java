@@ -6,25 +6,28 @@ import java.util.Arrays;
 import org.bouncycastle.math.ec.ECPoint;
 
 import DNA.UInt160;
-import DNA.Core.Scripts.Script;
+import DNA.Core.Scripts.Program;
 import DNA.Cryptography.Base58;
 import DNA.Cryptography.Digest;
 import DNA.Cryptography.ECC;
 
 /**
- * 账户
+ * account info, including privatekey/publicKey and publicHash
  */
 public class Account {
+	
 	/**
-	 * 私钥
+	 * privateKey, used for signing transaction
 	 */
     public final byte[] privateKey;
+    
     /**
-     * 公钥
+     * publickey, used for verifying signature info
      */
     public final ECPoint publicKey;
+    
     /**
-     * 公钥哈希
+     * publiekeyHash, used for identifing which account the contract belongs to
      */
     public final UInt160 publicKeyHash;
 
@@ -42,7 +45,7 @@ public class Account {
         	System.arraycopy(privateKey, 0, encoded, 1, 64);
             this.publicKey = ECC.secp256r1.getCurve().decodePoint(encoded);
         }
-        this.publicKeyHash = Script.toScriptHash(publicKey.getEncoded(true));
+        this.publicKeyHash = Program.toScriptHash(publicKey.getEncoded(true));
     }
     
     public String export() {

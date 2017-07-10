@@ -14,7 +14,7 @@ import DNA.Core.Transaction;
 import DNA.Core.TransactionAttribute;
 import DNA.Core.TransactionInput;
 import DNA.Core.TransactionOutput;
-import DNA.Core.Scripts.Script;
+import DNA.Core.Scripts.Program;
 import DNA.IO.Caching.TrackableCollection;
 import DNA.Implementations.Wallets.SQLite.UserWallet;
 import DNA.Wallets.Account;
@@ -134,12 +134,12 @@ public class OnChainSDKHelper {
 			System.out.println("\t\tout.value:"+out.value);
 		}
 		System.out.println("\tscripts:"+tx.scripts.length);
-		for(Script sc: tx.scripts) {
-			System.out.println("\t\tsc:"+sc.toString()+"\n\t\tsc.redeem:"+toHexString(sc.redeemScript) + "\n\t\tsc.stack :"+toHexString(sc.stackScript));
-			System.out.println("\t\tsc:"+sc.toString()+"\n\t\tsc.redeem.byte:"+byte2str(sc.redeemScript) + "\n\t\tsc.stack.byte :"+byte2str(sc.stackScript));
+		for(Program sc: tx.scripts) {
+			System.out.println("\t\tsc:"+sc.toString()+"\n\t\tsc.parameter:"+toHexString(sc.parameter) + "\n\t\tsc.code :"+toHexString(sc.code));
+			System.out.println("\t\tsc:"+sc.toString()+"\n\t\tsc.parameter.byte:"+byte2str(sc.parameter) + "\n\t\tsc.stack.code :"+byte2str(sc.code));
 		}
 		System.out.println("\ttx.hash():"+tx.hash());
-		System.out.println("\ttx.sysF():"+tx.systemFee());
+//		System.out.println("\ttx.sysF():"+tx.systemFee());
 		if(tx instanceof RegisterTransaction) {
 			RegisterTransaction reg = (RegisterTransaction) tx;
 			System.out.println("\ttx.amount:"+reg.amount);
@@ -178,7 +178,7 @@ public class OnChainSDKHelper {
 		sb.append("\n").append("height:"+bb.height);
 		sb.append("\n").append("nonce:"+bb.nonce);
 		sb.append("\n").append("nextMiner:"+bb.nextMiner.toString());
-		sb.append("\n").append("script:\n\t"+toHexString(bb.script.redeemScript) + "\n\t"+toHexString(bb.script.stackScript));
+		sb.append("\n").append("script:\n\t"+toHexString(bb.script.parameter) + "\n\t"+toHexString(bb.script.code));
 		sb.append("\n").append("transactions:..."+bb.transactions.length);
 		if(bb.transactions.length > 0) {
 			Arrays.stream(bb.transactions).forEach(p -> System.out.println(p));
@@ -211,8 +211,8 @@ public class OnChainSDKHelper {
 				sb.append("\n\t").append("scripts:"+p.scripts.length);
 				if(p.inputs.length > 0) {
 					Arrays.stream(p.scripts).forEach(i -> {
-						sb.append("\n\t\t").append("redeemScript:"+toHexString(i.redeemScript));
-						sb.append("\n\t\t").append("redeemScript:"+toHexString(i.redeemScript));
+						sb.append("\n\t\t").append("redeemScript:"+toHexString(i.parameter));
+						sb.append("\n\t\t").append("redeemScript:"+toHexString(i.parameter));
 					});
 				}
 			});
@@ -229,7 +229,7 @@ public class OnChainSDKHelper {
 		System.out.println("prevB :"+blk.timestamp);
 		System.out.println("prevB :"+System.currentTimeMillis());
 		System.out.println("bkTm  :"+new Date(blk.timestamp * 1000L));
-		System.out.println("sc.toS:\n\t"+toHexString(blk.script.redeemScript) + "\n\t"+toHexString(blk.script.stackScript));
+		System.out.println("sc.toS:\n\t"+toHexString(blk.script.parameter) + "\n\t"+toHexString(blk.script.code));
 		System.out.println("bk.mer:"+blk.merkleRoot);
 		System.out.println("blk.tx.len:"+blk.transactions.length);
 		for(Transaction tx: blk.transactions) {
@@ -304,10 +304,10 @@ public class OnChainSDKHelper {
 	public static void print(Account acc) {
 		// addr
 		System.out.println("acc..................st");
-		System.out.println("acc.addr:"+Wallet.toAddress(Script.toScriptHash(Contract.createSignatureRedeemScript(acc.publicKey))));
-		System.out.println("acc.uint:"+Script.toScriptHash(Contract.createSignatureRedeemScript(acc.publicKey)).toString());
-		System.out.println("acc.uint(byte):"+getbyteStr(Script.toScriptHash(Contract.createSignatureRedeemScript(acc.publicKey)).toArray()));
-		System.out.println("acc.uint(hex):"+toHexString(Script.toScriptHash(Contract.createSignatureRedeemScript(acc.publicKey)).toArray()));
+		System.out.println("acc.addr:"+Wallet.toAddress(Program.toScriptHash(Contract.createSignatureRedeemScript(acc.publicKey))));
+		System.out.println("acc.uint:"+Program.toScriptHash(Contract.createSignatureRedeemScript(acc.publicKey)).toString());
+		System.out.println("acc.uint(byte):"+getbyteStr(Program.toScriptHash(Contract.createSignatureRedeemScript(acc.publicKey)).toArray()));
+		System.out.println("acc.uint(hex):"+toHexString(Program.toScriptHash(Contract.createSignatureRedeemScript(acc.publicKey)).toArray()));
 		// pubKey
 		ECPoint pubKey = acc.publicKey;
 		String pubKeyStr = toHexString(acc.publicKey.getEncoded(true));

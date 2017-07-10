@@ -6,7 +6,7 @@ import java.util.Map.Entry;
 import java.util.stream.*;
 
 import DNA.*;
-import DNA.Core.Scripts.Script;
+import DNA.Core.Scripts.Program;
 import DNA.IO.*;
 import DNA.IO.Json.*;
 import DNA.Network.*;
@@ -18,44 +18,41 @@ public abstract class Transaction extends Inventory implements JsonSerializable 
 	/**
 	 * 交易类型
 	 */
-	public final TransactionType type;	// 交易类型
+	public final TransactionType type;
 	/**
 	 * 版本
 	 */
-	public byte version = 0;			// 版本
+	public byte version = 0;
 	/**
 	 * 随机数
 	 */
-	public long nonce;					// 随机数
+	public long nonce;
 	/**
 	 * 交易属性
 	 */
-	public TransactionAttribute[] attributes;	// 交易属性
+	public TransactionAttribute[] attributes;
 	/**
 	 * 交易资产来源
 	 */
-	public TransactionInput[] inputs;			// 交易资产来源
+	public TransactionInput[] inputs;
 	/**
 	 * 交易资产去向
 	 */
-	public TransactionOutput[] outputs;			// 交易资产去向
+	public TransactionOutput[] outputs;
 	/**
 	 * 验证脚本
 	 */
-	public Script[] scripts;					// 验证脚本
+	public Program[] scripts;
 	
 	protected Transaction(TransactionType type) {
 		this.type = type;
 	}
 	
-	/**
-	 * byte格式数据反序列化// ...已转换为json反序列化获取
-	 */
 	@Override
 	public void deserialize(BinaryReader reader) throws IOException {
 		deserializeUnsigned(reader);
 		try {
-			scripts = reader.readSerializableArray(Script.class);
+			scripts = reader.readSerializableArray(Program.class);
 		} catch (InstantiationException | IllegalAccessException ex) {
 			throw new RuntimeException(ex);
 		}
@@ -63,7 +60,7 @@ public abstract class Transaction extends Inventory implements JsonSerializable 
 	}
 	@Override
 	public void deserializeUnsigned(BinaryReader reader) throws IOException {
-        if (type.value() != reader.readByte()) {
+        if (type.value() != reader.readByte()) { // type
             throw new IOException();
         }
         deserializeUnsignedWithoutType(reader);
@@ -71,11 +68,8 @@ public abstract class Transaction extends Inventory implements JsonSerializable 
 
 	private void deserializeUnsignedWithoutType(BinaryReader reader) throws IOException {
         try {
-            if (reader.readByte() != version) {
-            	throw new IOException();
-            }
+            version = reader.readByte();
             deserializeExclusiveData(reader);
-//            nonce = reader.readVarInt();
 			attributes = reader.readSerializableArray(TransactionAttribute.class);
 	        inputs = reader.readSerializableArray(TransactionInput.class);
 	        TransactionInput[] inputs_all = getAllInputs().toArray(TransactionInput[]::new);
@@ -87,9 +81,6 @@ public abstract class Transaction extends Inventory implements JsonSerializable 
 	            }
 	        }
 	        outputs = reader.readSerializableArray(TransactionOutput.class);
-	        if (outputs.length > 65536) {
-	        	throw new IOException();
-	        }
 		} catch (InstantiationException | IllegalAccessException ex) {
 			throw new IOException(ex);
 		}
@@ -109,7 +100,6 @@ public abstract class Transaction extends Inventory implements JsonSerializable 
         writer.writeByte(type.value());
         writer.writeByte(version);
         serializeExclusiveData(writer);
-//        writer.writeVarInt(nonce);
         writer.writeSerializableArray(attributes);
         writer.writeSerializableArray(inputs);
         writer.writeSerializableArray(outputs);
@@ -159,14 +149,12 @@ public abstract class Transaction extends Inventory implements JsonSerializable 
             String typeName = "DNA.Core." + type.toString();
             Transaction transaction = (Transaction)Class.forName(typeName).newInstance();
             transaction.deserializeUnsignedWithoutType(reader);
-			transaction.scripts = reader.readSerializableArray(Script.class);
+			transaction.scripts = reader.readSerializableArray(Program.class);
 			return transaction;
 		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException ex) {
 			throw new IOException(ex);
 		}
 	}
-
-	
 	
 	public Stream<TransactionInput> getAllInputs() {
 		return Arrays.stream(inputs);
@@ -271,11 +259,11 @@ public abstract class Transaction extends Inventory implements JsonSerializable 
 		}
 		array = (JArray) json.get("Programs");
 		if(array == null || array.size() == 0) {
-			scripts = new Script[0];
+			scripts = new Program[0];
 		} else {
 			count = array.size();
 			try {
-				scripts = reader.readSerializableArray(Script.class, count, "Programs");
+				scripts = reader.readSerializableArray(Program.class, count, "Programs");
 			} catch (InstantiationException | IllegalAccessException | IOException e) {
 				throw new RuntimeException("Failed to fromJson at scripts");
 			}
@@ -294,6 +282,7 @@ public abstract class Transaction extends Inventory implements JsonSerializable 
             transaction.fromJson(reader);;
 			return transaction;
 		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException ex) {
+			ex.printStackTrace();
 			throw new IOException(ex);
 		}
 	}

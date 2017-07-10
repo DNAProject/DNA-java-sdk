@@ -1,6 +1,13 @@
 package DNA;
 
-
+/**
+ * Custom type which inherits base class defines 20-bit data, 
+ * it mostly used to defined contract address
+ * 
+ * @author 12146
+ * @since  JDK1.8
+ *
+ */
 public class UInt160 extends UIntBase implements Comparable<UInt160> {
     public static final UInt160 ZERO = new UInt160();
 
