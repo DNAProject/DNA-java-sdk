@@ -1,4 +1,4 @@
-DNA SDK 手册
+						DNA SDK 手册
 
 
 
@@ -6,8 +6,7 @@ DNA SDK 手册
 
 *** 下载DNA SKD(java版本)， 配置JAVA8运行环境
 
-注意： 配置java运行环境后运行程序时如出现如下错误：
-
+注意： 配置java运行环境后运行程序时如出现如下错误：
 java.security.InvalidKeyException: Illegal key size
 
 则这是秘钥长度大于128，安全策略文件受限的原因。可以去官网下载local_policy.jar和US_export_policy.jar，替换jre目录中${java_home}/jre/lib/security原有的与安全策略这两个jar即可。下载地址：
