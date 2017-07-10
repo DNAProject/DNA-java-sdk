@@ -8,12 +8,12 @@ package DNA;
  *
  */
 public class IVersion {
-	private static final String version = "v0.6.1";
+	private static final String version = "sdk-v0.6";
 	public static final String[] versionInfo = new String[] {
 		"project:" + "DNA SDK",
 		"version:" + version,
-		"description:"+ "This version is suitable for DNA master when the newly tag of DNA  is 0.6alpha,  named sdk-v0.6.1",
-		"lastModified:"+"2017-06-26",
+		"description:"+ "This version is suitable for DNA-v0.6alpha,  named sdk-v0.6",
+		"lastModified:"+"2017-07-10",
 		"author:"+"ts"
 	};
 

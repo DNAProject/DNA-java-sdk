@@ -5,7 +5,6 @@ import java.util.HashSet;
 
 import DNA.Fixed8;
 import DNA.UInt160;
-import DNA.IO.Json.JObject;
 
 /**
  *  分发资产交易
@@ -39,19 +38,6 @@ public class IssueTransaction extends Transaction {
         return hashes.stream().sorted().toArray(UInt160[]::new);
 	}
 	
-	/**
-	 * 系统费用
-	 */
-	@Override
-	public Fixed8 systemFee() {
-        return Fixed8.ZERO;
-	}
-	
-	@Override
-    public JObject json() {
-		return super.json();
-    }
-
 	@Override
 	public String toString() {
 		return "IssueTransaction [iss]";

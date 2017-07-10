@@ -11,7 +11,7 @@ import org.bouncycastle.math.ec.ECPoint;
 import DNA.Fixed8;
 import DNA.Helper;
 import DNA.UInt160;
-import DNA.Core.Scripts.Script;
+import DNA.Core.Scripts.Program;
 import DNA.Cryptography.ECC;
 import DNA.IO.BinaryReader;
 import DNA.IO.BinaryWriter;
@@ -60,9 +60,6 @@ public class RegisterTransaction extends Transaction {
 		super(TransactionType.RegisterTransaction);
 	}
 	
-	/**
-	 * byte格式数据反序列化// ...已转换为json反序列化获取
-	 */
 	@Override
 	protected void deserializeExclusiveData(BinaryReader reader) throws IOException {
 		try {
@@ -71,15 +68,15 @@ public class RegisterTransaction extends Transaction {
 			assetType = AssetType.valueOf(reader.readByte());
 			recordType = RecordType.valueOf(reader.readByte());
 	        amount = reader.readSerializable(Fixed8.class);
-            issuer = ECC.secp256r1.getCurve().createPoint(
-	        		new BigInteger(reader.readVarBytes()), new BigInteger(reader.readVarBytes()));
+	        byte[] xx = reader.readVarBytes();
+	        byte[] yy = reader.readVarBytes();
 	        admin = reader.readSerializable(UInt160.class);
+            issuer = ECC.secp256r1.getCurve().createPoint(
+	        		new BigInteger(1,xx), new BigInteger(1,yy));
 		} catch (Exception ex) {
 			throw new IOException(ex);
 		}
 	}
-	
-
 	@Override
 	protected void serializeExclusiveData(BinaryWriter writer) throws IOException {
         writer.writeVarString(name);
@@ -87,15 +84,11 @@ public class RegisterTransaction extends Transaction {
         writer.writeByte(assetType.value());
         writer.writeByte(recordType.value());
         writer.writeSerializable(amount);
-        writer.writeVarBytes(removePrevZero(issuer.getXCoord().toBigInteger().toByteArray()));
-        writer.writeVarBytes(removePrevZero(issuer.getYCoord().toBigInteger().toByteArray()));
+        writer.writeVarBytes(Helper.removePrevZero(issuer.getXCoord().toBigInteger().toByteArray()));
+        writer.writeVarBytes(Helper.removePrevZero(issuer.getYCoord().toBigInteger().toByteArray()));
+//        writer.writeVarBytes(issuer.getXCoord().toBigInteger().toByteArray());
+//        writer.writeVarBytes(issuer.getYCoord().toBigInteger().toByteArray());
         writer.writeSerializable(admin);
-	}
-	private byte[] removePrevZero(byte[] bt) {
-		if(bt.length == 33 && bt[0] == 0) {
-			return Arrays.copyOfRange(bt, 1, 33);
-		}
-		return bt;
 	}
 	
 	/**
@@ -115,16 +108,6 @@ public class RegisterTransaction extends Transaction {
 	        		new BigInteger(toPlainString(json.get("Issuer").get("Y").asString())));
 			admin = new UInt160(Helper.hexToBytes(json.get("Controller").asString()));
 //			admin = UInt160.parse(json.get("Controller").asString());
-            if (precision < 0 || precision > 8) 
-            	throw new RuntimeException();
-	        if(recordType == null) 
-	        	throw new RuntimeException();
-	        if (amount.equals(Fixed8.ZERO) || amount.compareTo(Fixed8.SATOSHI.negate()) < 0)
-	        	throw new RuntimeException();
-	        if (assetType == AssetType.Share && amount.compareTo(Fixed8.ZERO) <= 0)
-	            throw new RuntimeException();
-	        if (assetType == AssetType.Invoice && !amount.equals(Fixed8.SATOSHI.negate()))
-	            throw new RuntimeException();
 		} catch (Exception ex) {
 			throw new RuntimeException(ex);
 		}
@@ -140,19 +123,8 @@ public class RegisterTransaction extends Transaction {
 	@Override
 	public UInt160[] getScriptHashesForVerifying() {
         HashSet<UInt160> hashes = new HashSet<UInt160>(Arrays.asList(super.getScriptHashesForVerifying()));
-        hashes.add(Script.toScriptHash(Contract.createSignatureRedeemScript(issuer)));
-//        hashes.add(admin);
+        hashes.add(Program.toScriptHash(Contract.createSignatureRedeemScript(issuer)));
         return hashes.stream().sorted().toArray(UInt160[]::new);
-	}
-	
-	/**
-	 * 系统费用
-	 */
-	@Override
-	public Fixed8 systemFee() {
-        if (assetType == AssetType.Share || assetType == AssetType.Token)
-            return Fixed8.ZERO;
-        return Fixed8.ZERO;
 	}
 	
 	@Override

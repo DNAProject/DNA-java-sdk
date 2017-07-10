@@ -1,5 +1,7 @@
 package DNA;
 
+import java.util.Arrays;
+
 /**
  * Byte Handle Helper
  * 
@@ -46,4 +48,15 @@ public class Helper {
         }
         return sb.toString();
     }
+    
+    public static String reverse(String value) {
+    	return toHexString(reverse(hexToBytes(value)));
+    }
+    
+    public static byte[] removePrevZero(byte[] bt) {
+		if(bt.length == 33 && bt[0] == 0) {
+			return Arrays.copyOfRange(bt, 1, 33);
+		}
+		return bt;
+	}
 }

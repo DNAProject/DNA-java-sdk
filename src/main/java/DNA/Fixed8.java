@@ -4,7 +4,9 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.function.Function;
 
-import DNA.IO.*;
+import DNA.IO.BinaryReader;
+import DNA.IO.BinaryWriter;
+import DNA.IO.Serializable;
 
 /**
  * Number type in block. this type Can be accurate to 64-bit fixed-point, the rounding 

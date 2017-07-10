@@ -23,15 +23,13 @@ import DNA.UInt160;
 import DNA.UInt256;
 import DNA.Core.Block;
 import DNA.Core.Blockchain;
-import DNA.Core.ClaimTransaction;
 import DNA.Core.IssueTransaction;
 import DNA.Core.SignatureContext;
 import DNA.Core.Transaction;
 import DNA.Core.TransactionAttribute;
 import DNA.Core.TransactionInput;
 import DNA.Core.TransactionOutput;
-import DNA.Core.TransactionType;
-import DNA.Core.Scripts.Script;
+import DNA.Core.Scripts.Program;
 import DNA.Cryptography.AES;
 import DNA.Cryptography.Base58;
 import DNA.Cryptography.Digest;
@@ -72,7 +70,6 @@ public abstract class Wallet implements AutoCloseable {
 			} catch (Exception ex) {
             	this.current_height = 0;
 			}
-            System.out.println("hh:"+this.current_height);
             buildDatabase();
             saveStoredData("PasswordHash", Digest.sha256(passwordKey));
             saveStoredData("IV", iv);
@@ -178,7 +175,7 @@ public abstract class Wallet implements AutoCloseable {
     }
 
     public boolean containsAccount(ECPoint publicKey) {
-        return containsAccount(Script.toScriptHash(publicKey.getEncoded(true)));
+        return containsAccount(Program.toScriptHash(publicKey.getEncoded(true)));
     }
 
     public boolean containsAccount(UInt160 publicKeyHash) {
@@ -323,7 +320,7 @@ public abstract class Wallet implements AutoCloseable {
      * 账户相关信息接口
      */
     public Account getAccount(ECPoint publicKey) {
-        return getAccount(Script.toScriptHash(publicKey.getEncoded(true)));
+        return getAccount(Program.toScriptHash(publicKey.getEncoded(true)));
     }
 
     public Account getAccount(UInt160 publicKeyHash) {
@@ -419,7 +416,7 @@ public abstract class Wallet implements AutoCloseable {
     	synchronized (contracts) {
             if (Arrays.stream(tx.outputs).anyMatch(p -> contracts.containsKey(p.scriptHash)))
                 return true;
-            if (Arrays.stream(tx.scripts).anyMatch(p -> contracts.containsKey(Script.toScriptHash(p.redeemScript))))
+            if (Arrays.stream(tx.scripts).anyMatch(p -> contracts.containsKey(Program.toScriptHash(p.parameter))))
                 return true;
         }
         return false;
@@ -527,7 +524,7 @@ public abstract class Wallet implements AutoCloseable {
                             	coin.scriptHash = output.scriptHash;
                             	coin.setState(CoinState.Unspent);
                                 coins.add(coin);
-                            }
+                            }  
                         }
                     }
                 }
@@ -536,14 +533,6 @@ public abstract class Wallet implements AutoCloseable {
                     for (TransactionInput input : tx.getAllInputs().toArray(TransactionInput[]::new)) {
                         if (coins.containsKey(input)) {
                         	coins.remove(input);
-                        }
-                    }
-                }
-                // tx.type == ClaimTx
-                for (ClaimTransaction tx : Arrays.stream(block.transactions).filter(p -> p.type == TransactionType.ClaimTransaction).toArray(ClaimTransaction[]::new)) {
-                    for (TransactionInput claim : tx.claims) {
-                        if (coins.containsKey(claim)) {
-                            coins.remove(claim);
                         }
                     }
                 }
@@ -578,11 +567,14 @@ public abstract class Wallet implements AutoCloseable {
         Coin[] changeset;
         synchronized (contracts) {
             synchronized (coins) {
-                if (tx.getAllInputs().anyMatch(p -> !coins.containsKey(p) || coins.get(p).getState() != CoinState.Unspent))
+                if (tx.getAllInputs().anyMatch(p -> !coins.containsKey(p) 
+                		|| coins.get(p).getState() != CoinState.Unspent)) {
                     return false;
+                }
                 // 更新内存coin
-                for (TransactionInput input : tx.getAllInputs().toArray(TransactionInput[]::new))
+                for (TransactionInput input : tx.getAllInputs().toArray(TransactionInput[]::new)) {
                     coins.get(input).setState(CoinState.Spending);
+                }
                 for (int i = 0; i < tx.outputs.length; i++) {
                     if (contracts.containsKey(tx.outputs[i].scriptHash)) {
                     	Coin coin = new Coin();
@@ -637,14 +629,18 @@ public abstract class Wallet implements AutoCloseable {
 
     public static UInt160 toScriptHash(String address) {
         byte[] data = Base58.decode(address);
-        if (data.length != 25)
+        if (data.length != 25) {
             throw new IllegalArgumentException();
-        if (data[0] != COIN_VERSION)
+        }
+        if (data[0] != COIN_VERSION) {
             throw new IllegalArgumentException();
+        }
         byte[] checksum = Digest.sha256(Digest.sha256(data, 0, 21));
-        for (int i = 0; i < 4; i++)
-        	if (data[data.length - 4 + i] != checksum[i])
+        for (int i = 0; i < 4; i++) {
+        	if (data[data.length - 4 + i] != checksum[i]) {
         		throw new IllegalArgumentException();
+        	}
+        }
         byte[] buffer = new byte[20];
         System.arraycopy(data, 1, buffer, 0, 20);
         return new UInt160(buffer);

@@ -8,7 +8,7 @@ import java.util.stream.Stream;
 import org.bouncycastle.math.ec.ECPoint;
 
 import DNA.UInt160;
-import DNA.Core.Scripts.Script;
+import DNA.Core.Scripts.Program;
 import DNA.Core.Scripts.ScriptBuilder;
 import DNA.Core.Scripts.ScriptOp;
 import DNA.IO.BinaryReader;
@@ -49,7 +49,7 @@ public class Contract implements Serializable {
     private UInt160 _scriptHash;
     public UInt160 scriptHash() {
         if (_scriptHash == null) {
-            _scriptHash = Script.toScriptHash(redeemScript);
+            _scriptHash = Program.toScriptHash(redeemScript);
         }
         return _scriptHash;
     }
@@ -76,7 +76,7 @@ public class Contract implements Serializable {
         Contract contract = new Contract();
     	contract.redeemScript = createSignatureRedeemScript(publicKey);
     	contract.parameterList = new ContractParameterType[] { ContractParameterType.Signature };
-    	contract.publicKeyHash = Script.toScriptHash(publicKey.getEncoded(true));
+    	contract.publicKeyHash = Program.toScriptHash(publicKey.getEncoded(true));
     	return contract;
     }
     

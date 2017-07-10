@@ -9,7 +9,7 @@ import java.util.function.Function;
 
 import DNA.UInt160;
 import DNA.UInt256;
-import DNA.Core.Scripts.Script;
+import DNA.Core.Scripts.Program;
 import DNA.Cryptography.MerkleTree;
 import DNA.IO.BinaryReader;
 import DNA.IO.BinaryWriter;
@@ -60,7 +60,7 @@ public class Block extends Inventory implements JsonSerializable {
     /**
      *  用于验证该区块的脚本
      */
-    public Script script;
+    public Program script;
     /**
      *  交易列表，当列表中交易的数量为0时，该Block对象表示一个区块头
      */
@@ -114,20 +114,21 @@ public class Block extends Inventory implements JsonSerializable {
         	throw new IOException();
         // 脚本
         try {
-			script = reader.readSerializable(Script.class);
+			script = reader.readSerializable(Program.class);
 		} catch (InstantiationException | IllegalAccessException ex) {
         	throw new IOException(ex);
 		}
         // 交易
-        transactions = new Transaction[(int) reader.readVarInt(0x10000000)];
+//      transactions = new Transaction[(int) reader.readVarInt(0x10000000)];//xy
+        transactions = new Transaction[(int) reader.readInt()];	//dna
         for (int i = 0; i < transactions.length; i++) {
             transactions[i] = Transaction.deserializeFrom(reader);
         }
         if (transactions.length > 0) {
-            if (transactions[0].type != TransactionType.MinerTransaction || Arrays.stream(transactions).skip(1).anyMatch(p -> p.type == TransactionType.MinerTransaction))
+            if (transactions[0].type != TransactionType.BookKeeping 
+            		|| Arrays.stream(transactions).skip(1).anyMatch(p -> p.type == TransactionType.BookKeeping)) {
                 throw new IOException();
-            if (!merkleRoot.equals(MerkleTree.computeRoot(Arrays.stream(transactions).map(p -> p.hash()).toArray(UInt256[]::new))))
-                throw new IOException();
+            }
         }
     }
 
@@ -139,7 +140,7 @@ public class Block extends Inventory implements JsonSerializable {
             merkleRoot = reader.readSerializable(UInt256.class);
             timestamp = reader.readInt();
             height = reader.readInt();
-            nonce = reader.readLong();
+            nonce = Long.valueOf(reader.readLong());
 			nextMiner = reader.readSerializable(UInt160.class);
 	        transactions = new Transaction[0];
 		} catch (InstantiationException | IllegalAccessException ex) {
@@ -150,7 +151,8 @@ public class Block extends Inventory implements JsonSerializable {
     @Override 
     public void serialize(BinaryWriter writer) throws IOException {
         serializeUnsigned(writer);
-        writer.writeByte((byte)1); writer.writeSerializable(script);
+        writer.writeByte((byte)1);
+        writer.writeSerializable(script);
         writer.writeSerializableArray(transactions);
     }
 
@@ -197,7 +199,7 @@ public class Block extends Inventory implements JsonSerializable {
 	        	// 填充值
 	        	reader.readByte(); 
 	        	// 脚本
-	        	block.script = reader.readSerializable(Script.class);
+	        	block.script = reader.readSerializable(Program.class);
 	        	// 交易
 	        	if (txSelector == null) {
 	        		block.transactions = new Transaction[0];
@@ -220,7 +222,7 @@ public class Block extends Inventory implements JsonSerializable {
     @Override 
     public UInt160[] getScriptHashesForVerifying() {
         if (prevBlock.equals(UInt256.ZERO)) {
-            return new UInt160[] { Script.toScriptHash(script.redeemScript) };
+            return new UInt160[] { Program.toScriptHash(script.parameter) };
         }
         Block prev_header;
 		try {
@@ -311,7 +313,7 @@ public class Block extends Inventory implements JsonSerializable {
 		this.nonce = new BigDecimal(json.get("ConsensusData").asString()).longValue();
 		// script
 		try {
-			this.script = new JsonReader(json.get("Program")).readSerializable(Script.class);
+			this.script = new JsonReader(json.get("Program")).readSerializable(Program.class);
 		} catch (InstantiationException | IllegalAccessException | IOException e) {
 			throw new RuntimeException("");
 		}
@@ -328,10 +330,9 @@ public class Block extends Inventory implements JsonSerializable {
 			try {
 				this.transactions[i] = Transaction.fromJsonD(new JsonReader(txsJson.get(i)));
 			} catch (IOException e) {
+				e.printStackTrace();
 				throw new RuntimeException("Tx.deserialize failed");
 			}
 		}
 	}
-	
-	
 }

@@ -1,9 +1,18 @@
 package DNA.Wallets;
 
-import DNA.*;
+import DNA.Fixed8;
+import DNA.UInt160;
+import DNA.UInt256;
 import DNA.Core.TransactionInput;
-import DNA.IO.Caching.*;
+import DNA.IO.Caching.ITrackable;
+import DNA.IO.Caching.TrackState;
 
+/**
+ * Account's change, used to pay for the transaction
+ * 
+ * @author 12146
+ *
+ */
 public class Coin implements ITrackable<TransactionInput> {
     public TransactionInput input;
     public UInt256 assetId;
