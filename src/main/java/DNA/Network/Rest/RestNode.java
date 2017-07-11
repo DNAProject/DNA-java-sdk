@@ -20,6 +20,11 @@ public class RestNode {
 		restClient = new RestClient(restUrl);
 	}
 	
+	public RestNode(String restUrl, String accessToken) {
+		restClient = new RestClient(restUrl);
+		setAccessToken(accessToken);
+	}
+	
 	public void setAccessToken(String accessToken) {
 		this.accessToken = accessToken;
 	}

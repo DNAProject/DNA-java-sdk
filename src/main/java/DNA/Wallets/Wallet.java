@@ -649,4 +649,12 @@ public abstract class Wallet implements AutoCloseable {
     public String dbPath() {
     	return path;
     }
+    
+    public boolean hasFinishedSyncBlock() {
+    	try {
+			return Blockchain.current().height() <= walletHeight();
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+    }
 }

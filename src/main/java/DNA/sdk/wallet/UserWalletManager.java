@@ -66,18 +66,20 @@ public class UserWalletManager {
 	
 	public static UserWalletManager getWallet(String path, String url, String accessToken) {
 		UserWalletManager wm = new UserWalletManager();
-		wm.initRestNode(url);
-		wm.setAccessToken(accessToken);
-		wm.initBlockchain();
+		// init BlockRestNode(for getBlock)
+		wm.initBlockRestNode(url, accessToken);
+		
+		// init RestNode(for send/get Tx)
+		wm.initRestNode(url, accessToken);
+		
+		// init user manager
 		wm.initWallet(path);
-		wm.startSync();
 		return wm;
 	}
 	
 	public static UserWalletManager getWallet(String url, String accessToken) {
 		UserWalletManager wm = new UserWalletManager();
-		wm.initRestNode(url);
-		wm.setAccessToken(accessToken);
+		wm.initRestNode(url, accessToken);
 		return wm;
 	}
 	
@@ -87,18 +89,34 @@ public class UserWalletManager {
 		return wm;
 	}
 	
-	public void setRestUrl4Block() {
-		// ...
+	private UserWalletManager() {
 	}
-	public void setRestUrl4Tx(String url) {
-		restNode = new RestNode(url);
+	
+	private void initBlockRestNode(String url, String token) {
+		Blockchain.register(new RestBlockchain(new RestNode(url, token)));
+	}
+	
+	public void initRestNode(String url, String token) {
+		this.restNode = new RestNode(url, token);
+	}
+	
+	public void setAccessToken(String accessToken) {
+		this.restNode.setAccessToken(accessToken);
+	}
+	
+	public void setAuthType(String authType) {
+		this.restNode.setAuthType(authType);
+	}
+	
+	public void setVersion(String version, String type) {
+		this.version = version;
+		this.type = type;
 	}
 	
 	public UserWallet getWallet(){
 		return uw;
 	}
-	private UserWalletManager() {
-	}
+	
 	private void initWallet(String path) {
 		if(new File(path).exists() && new File(path).isFile()) {
 			uw = UserWallet.open(path, "0x123456");
@@ -106,19 +124,15 @@ public class UserWalletManager {
 			uw = UserWallet.create(path, "0x123456");
 		}
 	}
-	private void startSync() {
+	public void startSyncBlock() {
 		uw.start();
 	}
-	public void stopSync() {
+	public void stopSyncBlock() {
 		uw.close();;
 	}
-	private void initRestNode(String url) {
-		restNode = new RestNode(url);
+	public boolean hasFinishedSyncBlock() {
+		return uw.hasFinishedSyncBlock();
 	}
-	public void initBlockchain() {
-		Blockchain.register(new RestBlockchain(restNode));
-	}
-	
 	
 	/**
 	 * 创建单个账户
@@ -138,6 +152,26 @@ public class UserWalletManager {
 		return uw.getContract(Contract.createSignatureContract(uw.createAccount().publicKey).address()).address();
 	}
 	
+	/**
+	 * 根据私钥创建账户
+	 * 
+	 * @param prikey
+	 * @return
+	 */
+	public String createAccount(String prikey) {
+		Account acc = uw.createAccount(Helper.hexToBytes(prikey));
+		return uw.getContract(Contract.createSignatureContract(acc.publicKey).address()).address();
+	}
+	
+	/**
+	 * 导出当前账户管理器中所有账户地址
+	 * 
+	 * @return
+	 */
+	public List<String> export() {
+		return Arrays.stream(uw.getContracts()).map(p -> p.address()).collect(Collectors.toList());
+	}
+	
 	public String address2UInt160(String address) {
 		return Wallet.toScriptHash(address).toString();
 	}
@@ -151,20 +185,6 @@ public class UserWalletManager {
 		} catch (RestException e) {
 			throw new RuntimeException(e);
 		}
-	}
-	
-	
-	public void setAuthType(String authType) {
-		this.restNode.setAuthType(authType);
-	}
-	
-	public void setAccessToken(String accessToken) {
-		this.restNode.setAccessToken(accessToken);
-	}
-	
-	public void setVersion(String version, String type) {
-		this.version = version;
-		this.type = type;
 	}
 	
 	/**
