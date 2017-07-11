@@ -58,8 +58,8 @@ public class UserWalletManager {
 	private String action = "sendrawtransaction",version = "v001",type = "t001";
 	private UserWallet uw;
 	private RestNode restNode;
-	private boolean isWaitSync = true;
 	
+	private boolean isWaitSync = true;
 	public void setWaitSync(boolean isWaitSync) {
 		this.isWaitSync = isWaitSync;
 	}
@@ -332,7 +332,7 @@ public class UserWalletManager {
 	 * @return	交易编号
 	 * @throws Exception
 	 */
-	public RegisterTransaction createRegTx(String issuer, String name, long amount, String desc, String controller, int precision) {
+	public RegisterTransaction makeRegisterTransaction(String issuer, String name, long amount, String desc, String controller, int precision) {
 		return uw.makeTransaction(getRegTx(getAccount(issuer), name, amount, desc, AssetType.Token, controller, precision), Fixed8.ZERO);
 	}
 	/**
@@ -346,7 +346,7 @@ public class UserWalletManager {
 	 * @return	交易编号
 	 * @throws Exception
 	 */
-	public IssueTransaction createIssTx(String sendAddr, String assetid, long amount, String recvAddr, String desc) {
+	public IssueTransaction makeIssueTransaction(String sendAddr, String assetid, long amount, String recvAddr, String desc) {
 		return uw.makeTransaction(getIssTx(assetid, amount, recvAddr, desc), Fixed8.ZERO);
 	}
 	/**
@@ -358,7 +358,7 @@ public class UserWalletManager {
 	 * @return	交易编号
 	 * @throws Exception
 	 */
-	public IssueTransaction createIssTx(String sendAddr, List<TxJoiner>list, String desc) {
+	public IssueTransaction makeIssueTransaction(String sendAddr, List<TxJoiner>list, String desc) {
 		return uw.makeTransaction(getIssTx(list, desc), Fixed8.ZERO);
 	}
 	/**
@@ -372,7 +372,7 @@ public class UserWalletManager {
 	 * @return	交易编号
 	 * @throws Exception
 	 */
-	public TransferTransaction createTrfTx(String sendAddr, String assetid, long amount, String recvAddr, String desc) {
+	public TransferTransaction makeTransferTransaction(String sendAddr, String assetid, long amount, String recvAddr, String desc) {
 		return uw.makeTransaction(getTrfTx(assetid, amount, recvAddr, desc), Fixed8.ZERO, getAddress(sendAddr));
 	}
 	/**
@@ -384,7 +384,7 @@ public class UserWalletManager {
 	 * @return	交易编号
 	 * @throws Exception
 	 */
-	public TransferTransaction createTrfTx(String sendAddr, List<TxJoiner> list, String desc) {
+	public TransferTransaction makeTransferTransaction(String sendAddr, List<TxJoiner> list, String desc) {
 		return uw.makeTransaction(getTrfTx(list, desc), Fixed8.ZERO, getAddress(sendAddr));
 	}
 	/**
@@ -396,7 +396,7 @@ public class UserWalletManager {
 	 * @param controller
 	 * @return
 	 */
-	public StateUpdateTransaction createStateUpdateTx(String namespace, String key, String value, String controller) {
+	public StateUpdateTransaction makeStateUpdateTransaction(String namespace, String key, String value, String controller) {
 		StateUpdateTransaction tx = new StateUpdateTransaction();
 		tx.attributes = new TransactionAttribute[0];
 		tx.inputs = new TransactionInput[0];
@@ -414,7 +414,7 @@ public class UserWalletManager {
 	 * @param tx	待签名的交易
 	 * @return	签名完成且序列化后的交易
 	 */
-	public String signTx(DNA.Core.Transaction tx) {
+	public String signatureData(DNA.Core.Transaction tx) {
 		SignatureContext context = new SignatureContext(tx);
 		boolean f5 = uw.sign(context);
 		if(f5 && context.isCompleted()){
@@ -432,8 +432,8 @@ public class UserWalletManager {
 	 * @return		发送成功与否
 	 * @throws RestException
 	 */
-	public boolean sendTx(DNA.Core.Transaction tx) throws RestException {
-		if(sendTx(Helper.toHexString(tx.toArray()))) {
+	public boolean sendTransaction(DNA.Core.Transaction tx) throws RestException {
+		if(sendTransaction(Helper.toHexString(tx.toArray()))) {
 			uw.saveTransaction(tx);
 			return true;
 		}
@@ -446,7 +446,7 @@ public class UserWalletManager {
 	 * @return		发送成功与否
 	 * @throws RestException
 	 */
-	public boolean sendTx(String txHex) throws RestException {
+	public boolean sendTransaction(String txHex) throws RestException {
 		return restNode.sendRawTransaction(action, version, type, txHex);
 	}
 	
@@ -541,7 +541,6 @@ public class UserWalletManager {
 		tx.amount = Fixed8.parse(String.valueOf(assetAmount));	
 		tx.issuer = acc.publicKey;	
 		tx.admin = Wallet.toScriptHash(controller); 
-//		tx.admin = Wallet.toScriptHash(Contract.createSignatureContract(acc.publicKey).address()); 
 		tx.outputs = new TransactionOutput[0];
 		if(txDesc != null && txDesc.length() > 0) {
 			tx.attributes = new TransactionAttribute[1];
