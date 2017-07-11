@@ -20,6 +20,7 @@ import DNA.Core.RecordTransaction;
 import DNA.Core.RecordType;
 import DNA.Core.RegisterTransaction;
 import DNA.Core.SignatureContext;
+import DNA.Core.StateUpdateTransaction;
 import DNA.Core.Transaction;
 import DNA.Core.TransactionAttribute;
 import DNA.Core.TransactionAttributeUsage;
@@ -385,6 +386,26 @@ public class UserWalletManager {
 	 */
 	public TransferTransaction createTrfTx(String sendAddr, List<TxJoiner> list, String desc) {
 		return uw.makeTransaction(getTrfTx(list, desc), Fixed8.ZERO, getAddress(sendAddr));
+	}
+	/**
+	 * 构造状态更新交易
+	 * 
+	 * @param namespace
+	 * @param key
+	 * @param value
+	 * @param controller
+	 * @return
+	 */
+	public StateUpdateTransaction createStateUpdateTx(String namespace, String key, String value, String controller) {
+		StateUpdateTransaction tx = new StateUpdateTransaction();
+		tx.attributes = new TransactionAttribute[0];
+		tx.inputs = new TransactionInput[0];
+		tx.outputs = new TransactionOutput[0];
+		tx.namespace = namespace.getBytes();
+		tx.key = key.getBytes();
+		tx.value = value.getBytes();
+		tx.updater = getAccount(controller).publicKey;
+		return tx;
 	}
 	// 2. 交易签名
 	/**

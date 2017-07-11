@@ -41,6 +41,11 @@ public enum TransactionType {
      */
     RecordTransaction(0x81),
     
+	/**
+     * 
+     */
+    StateUpdateTransaction(0x90),
+	
     ;
 
     private byte value;
