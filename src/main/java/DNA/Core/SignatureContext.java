@@ -10,7 +10,7 @@ import org.bouncycastle.math.ec.ECPoint;
 
 import DNA.Helper;
 import DNA.UInt160;
-import DNA.Core.Scripts.Script;
+import DNA.Core.Scripts.Program;
 import DNA.Core.Scripts.ScriptBuilder;
 import DNA.Cryptography.ECC;
 import DNA.IO.Json.JArray;
@@ -100,9 +100,9 @@ public class SignatureContext {
      *  从签名上下文中获得完整签名的合约脚本
      *  <returns>返回合约脚本</returns>
      */
-    public Script[] getScripts() {
+    public Program[] getScripts() {
         if (!isCompleted()) throw new IllegalStateException();
-        Script[] scripts = new Script[signatures.length];
+        Program[] scripts = new Program[signatures.length];
         for (int i = 0; i < scripts.length; i++) {
             try (ScriptBuilder sb = new ScriptBuilder()) {
 	            for (byte[] signature : signatures[i].entrySet().stream()
@@ -110,9 +110,9 @@ public class SignatureContext {
 	            		.map(p -> p.getValue()).toArray(byte[][]::new)) {
 	                sb.push(signature);
 	            }
-	            scripts[i] = new Script();
-	            scripts[i].stackScript = sb.toArray();
-	            scripts[i].redeemScript = redeemScripts[i];
+	            scripts[i] = new Program();
+	            scripts[i].parameter = sb.toArray();		// sign
+	            scripts[i].code = redeemScripts[i];	// pk
             }
         }
         return scripts;

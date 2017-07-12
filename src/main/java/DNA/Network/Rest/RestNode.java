@@ -2,10 +2,12 @@ package DNA.Network.Rest;
 
 import java.io.IOException;
 
+import DNA.Helper;
 import DNA.Core.Block;
 import DNA.Core.Transaction;
 import DNA.IO.JsonReader;
 import DNA.IO.JsonSerializable;
+import DNA.IO.Serializable;
 import DNA.IO.Json.JObject;
 
 import com.alibaba.fastjson.JSON;
@@ -16,6 +18,10 @@ public class RestNode {
 	
 	public RestNode(String restUrl) {
 		restClient = new RestClient(restUrl);
+	}
+	public RestNode(String restUrl, String accessToken) {
+		restClient = new RestClient(restUrl);
+		setAccessToken(accessToken);
 	}
 	
 	public void setAccessToken(String accessToken) {
@@ -36,11 +42,13 @@ public class RestNode {
 	}
 	
 	public Transaction getRawTransaction(String txid) throws RestException {
-		String rs = restClient.getTransaction(authType, accessToken, txid);
+//		String rs = restClient.getTransaction(authType, accessToken, Helper.reverse(txid)); // DNA-jj
+		String rs = restClient.getTransaction(authType, accessToken, txid);	// DNA-195
 		Result rr = JSON.parseObject(rs, Result.class);
 		if(rr.Error == 0) {
 			try {
-				return Transaction.fromJsonD(new JsonReader(JObject.parse(rr.Result)));
+//				return Transaction.fromJsonD(new JsonReader(JObject.parse(rr.Result)));
+				return Transaction.deserializeFrom(Helper.hexToBytes(rr.Result));
 			} catch (IOException e) {
 				throw new RestRuntimeException("Transaction.fromJsonD(txid) failed", e);
 			}
@@ -49,8 +57,10 @@ public class RestNode {
 	}
 	
 	public String getAsset(String assetid) throws RestException {
+//		String rs = restClient.getAsset(authType, accessToken, Helper.reverse(assetid));
 		String rs = restClient.getAsset(authType, accessToken, assetid);
 		Result rr = JSON.parseObject(rs, Result.class);
+		System.out.println("rs:"+rr);
 		if(rr.Error != 0) {
 			throw new RestRuntimeException(rr.toString());
 		}
@@ -73,7 +83,8 @@ public class RestNode {
 			throw new RestRuntimeException(rr.toString());
 		}
 		try {
-			return JsonSerializable.from(JObject.parse(rr.Result), Block.class);
+//			return JsonSerializable.from(JObject.parse(rr.Result), Block.class);
+			return Serializable.from(DNA.Helper.hexToBytes(rr.Result), Block.class);
 		} catch (InstantiationException | IllegalAccessException e) {
 			throw new RestRuntimeException("Block.deserialize(height) failed", e);
 		}
@@ -86,11 +97,52 @@ public class RestNode {
 			throw new RestRuntimeException(rr.toString());
 		}
 		try {
-			return JsonSerializable.from(JObject.parse(rr.Result), Block.class);
+//			return JsonSerializable.from(JObject.parse(rr.Result), Block.class);
+			return Serializable.from(DNA.Helper.hexToBytes(rr.Result), Block.class);
 		} catch (InstantiationException | IllegalAccessException e) {
 			throw new RestRuntimeException("Block.deserialize(hash) failed", e);
 		}
 		
+	}
+	
+	// ********************************************************************************
+	public Transaction getRawTransactionJson(String txid) throws RestException {
+		String rs = restClient.getTransaction(authType, accessToken, txid);
+		Result rr = JSON.parseObject(rs, Result.class);
+		System.out.println("rr:"+rr);
+		if(rr.Error == 0) {
+			try {
+				return Transaction.fromJsonD(new JsonReader(JObject.parse(rr.Result)));
+			} catch (Exception e) {
+				throw new RestRuntimeException("Transaction.fromJsonD(txid) failed", e);
+			}
+		}
+		throw new RestRuntimeException(rr.toString());
+	}
+	public Block getBlockJson(int height) throws RestException {
+		String rs = restClient.getBlock(authType, accessToken, height);
+		Result rr = JSON.parseObject(rs, Result.class);
+		if(rr.Error != 0) {
+			throw new RestRuntimeException(rr.toString());
+		}
+		try {
+			return JsonSerializable.from(JObject.parse(rr.Result), Block.class);
+		} catch (InstantiationException | IllegalAccessException e) {
+			throw new RestRuntimeException("Block.deserialize(height) failed", e);
+		}
+	}
+		
+	public Block getBlockJson(String hash) throws RestException {
+		String rs = restClient.getBlock(authType, accessToken, hash);
+		Result rr = JSON.parseObject(rs, Result.class);
+		if(rr.Error != 0) {
+			throw new RestRuntimeException(rr.toString());
+		}
+		try {
+			return JsonSerializable.from(JObject.parse(rr.Result), Block.class);
+		} catch (InstantiationException | IllegalAccessException e) {
+			throw new RestRuntimeException("Block.deserialize(hash) failed", e);
+		}
 	}
 }
 class Result {

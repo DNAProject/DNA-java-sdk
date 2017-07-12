@@ -1,5 +1,9 @@
 package DNA;
 
+import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.Date;
+
 /**
  * Byte Handle Helper
  * 
@@ -46,4 +50,19 @@ public class Helper {
         }
         return sb.toString();
     }
+    
+    public static String reverse(String value) {
+    	return toHexString(reverse(hexToBytes(value)));
+    }
+    
+    public static byte[] removePrevZero(byte[] bt) {
+		if(bt.length == 33 && bt[0] == 0) {
+			return Arrays.copyOfRange(bt, 1, 33);
+		}
+		return bt;
+	}
+
+	public static String now() {
+		return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date());
+	}
 }

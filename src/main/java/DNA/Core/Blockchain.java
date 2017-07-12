@@ -13,7 +13,7 @@ import DNA.Helper;
 import DNA.Out;
 import DNA.UInt160;
 import DNA.UInt256;
-import DNA.Core.Scripts.Script;
+import DNA.Core.Scripts.Program;
 import DNA.Cryptography.ECC;
 import DNA.Wallets.Contract;
 
@@ -184,7 +184,7 @@ public abstract class Blockchain implements AutoCloseable {
      *  <returns>返回记账人的合约地址</returns>
      */
     public static UInt160 getMinerAddress(ECPoint[] miners) {
-        return Script.toScriptHash(Contract.createMultiSigRedeemScript(miners.length - (miners.length - 1) / 3, miners));
+        return Program.toScriptHash(Contract.createMultiSigRedeemScript(miners.length - (miners.length - 1) / 3, miners));
     }
 
     private ArrayList<ECPoint> _miners = new ArrayList<ECPoint>();

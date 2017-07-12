@@ -1,50 +1,51 @@
 package DNA.Core;
 
 /**
- *  交易类型
+ * list transaction types supported by DNA 
  */
 public enum TransactionType {
     /**
-     *  用于分配字节费的特殊交易
+     *  used for accounting
      */
-    MinerTransaction(0x00),
+    BookKeeping(0x00),
     /**
-     *  用于分发资产的特殊交易
+     *  used for accounting
      */
     IssueTransaction(0x01),
     /**
-     *  用于分配小蚁币的特殊交易
+     *  
      */
-    ClaimTransaction(0x02),
+    BookKeeper(0x02),
     /**
-     *  用于报名成为记账候选人的特殊交易
+     * 
      */
-    EnrollmentTransaction(0x20),
+    DataFile(0x12),
     /**
-     *  用于投票选出记账人的特殊交易
+     * 
      */
-    VotingTransaction(0x24),
+    DeployCode(0xd0),
     /**
-     *  用于资产登记的特殊交易
+     *  
+     */
+    PrivacyPayload(0x20),
+    /**
+     *  
      */
     RegisterTransaction(0x40),
     /**
-     *  合约交易，这是最常用的一种交易
+     *  used for transfering Transaction, this is 
      */
-//    ContractTransaction(0x80),
-//    TransferTransaction(0x10), 
     TransferTransaction(0x80), 
-    
-//    RecordTransaction(0x11),
+    /**
+     * used for storing certificate
+     */
     RecordTransaction(0x81),
+    
     /**
-     *  委托交易
+     * 
      */
-    AgencyTransaction(0xb0),
-    /**
-     *  Publish scripts to the blockchain for being invoked later.
-     */
-    PublishTransaction(0xd0),
+    StateUpdateTransaction(0x90),
+    
     ;
 
     private byte value;
