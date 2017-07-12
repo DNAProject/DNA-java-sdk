@@ -20,13 +20,14 @@ import DNA.Core.RecordTransaction;
 import DNA.Core.RecordType;
 import DNA.Core.RegisterTransaction;
 import DNA.Core.SignatureContext;
+import DNA.Core.StateUpdateTransaction;
 import DNA.Core.Transaction;
 import DNA.Core.TransactionAttribute;
 import DNA.Core.TransactionAttributeUsage;
 import DNA.Core.TransactionInput;
 import DNA.Core.TransactionOutput;
 import DNA.Core.TransferTransaction;
-import DNA.Core.Scripts.Script;
+import DNA.Core.Scripts.Program;
 import DNA.Implementations.Blockchains.Rest.RestBlockchain;
 import DNA.Implementations.Wallets.SQLite.UserWallet;
 import DNA.Network.Rest.RestException;
@@ -35,13 +36,14 @@ import DNA.Wallets.Account;
 import DNA.Wallets.Contract;
 import DNA.Wallets.Wallet;
 import DNA.Websocket.Utils.GetBlockTransactionUtils;
+import DNA.sdk.info.account.AccountAsset;
+import DNA.sdk.info.account.AccountInfo;
+import DNA.sdk.info.account.Asset;
 import DNA.sdk.info.asset.AssetInfo;
+import DNA.sdk.info.mutil.TxJoiner;
 import DNA.sdk.info.transaction.TransactionInfo;
 import DNA.sdk.info.transaction.TxInputInfo;
 import DNA.sdk.info.transaction.TxOutputInfo;
-import DNA.sdk.sdk.info.account.AccountAsset;
-import DNA.sdk.sdk.info.account.AccountInfo;
-import DNA.sdk.sdk.info.account.Asset;
 
 import com.alibaba.fastjson.JSON;
 
@@ -56,26 +58,28 @@ public class UserWalletManager {
 	private String action = "sendrawtransaction",version = "v001",type = "t001";
 	private UserWallet uw;
 	private RestNode restNode;
-	private boolean isWaitSync = true;
 	
+	private boolean isWaitSync = true;
 	public void setWaitSync(boolean isWaitSync) {
 		this.isWaitSync = isWaitSync;
 	}
 	
 	public static UserWalletManager getWallet(String path, String url, String accessToken) {
 		UserWalletManager wm = new UserWalletManager();
-		wm.initRestNode(url);
-		wm.setAccessToken(accessToken);
-		wm.initBlockchain();
+		// init BlockRestNode(for getBlock)
+		wm.initBlockRestNode(url, accessToken);
+		
+		// init RestNode(for send/get Tx)
+		wm.initRestNode(url, accessToken);
+		
+		// init user manager
 		wm.initWallet(path);
-		wm.startSync();
 		return wm;
 	}
 	
 	public static UserWalletManager getWallet(String url, String accessToken) {
 		UserWalletManager wm = new UserWalletManager();
-		wm.initRestNode(url);
-		wm.setAccessToken(accessToken);
+		wm.initRestNode(url, accessToken);
 		return wm;
 	}
 	
@@ -85,11 +89,34 @@ public class UserWalletManager {
 		return wm;
 	}
 	
+	private UserWalletManager() {
+	}
+	
+	private void initBlockRestNode(String url, String token) {
+		Blockchain.register(new RestBlockchain(new RestNode(url, token)));
+	}
+	
+	public void initRestNode(String url, String token) {
+		this.restNode = new RestNode(url, token);
+	}
+	
+	public void setAccessToken(String accessToken) {
+		this.restNode.setAccessToken(accessToken);
+	}
+	
+	public void setAuthType(String authType) {
+		this.restNode.setAuthType(authType);
+	}
+	
+	public void setVersion(String version, String type) {
+		this.version = version;
+		this.type = type;
+	}
+	
 	public UserWallet getWallet(){
 		return uw;
 	}
-	private UserWalletManager() {
-	}
+	
 	private void initWallet(String path) {
 		if(new File(path).exists() && new File(path).isFile()) {
 			uw = UserWallet.open(path, "0x123456");
@@ -97,19 +124,15 @@ public class UserWalletManager {
 			uw = UserWallet.create(path, "0x123456");
 		}
 	}
-	private void startSync() {
+	public void startSyncBlock() {
 		uw.start();
 	}
-	public void stopSync() {
+	public void stopSyncBlock() {
 		uw.close();;
 	}
-	private void initRestNode(String url) {
-		restNode = new RestNode(url);
+	public boolean hasFinishedSyncBlock() {
+		return uw.hasFinishedSyncBlock();
 	}
-	public void initBlockchain() {
-		Blockchain.register(new RestBlockchain(restNode));
-	}
-	
 	
 	/**
 	 * 创建单个账户
@@ -129,6 +152,26 @@ public class UserWalletManager {
 		return uw.getContract(Contract.createSignatureContract(uw.createAccount().publicKey).address()).address();
 	}
 	
+	/**
+	 * 根据私钥创建账户
+	 * 
+	 * @param prikey
+	 * @return
+	 */
+	public String createAccount(String prikey) {
+		Account acc = uw.createAccount(Helper.hexToBytes(prikey));
+		return uw.getContract(Contract.createSignatureContract(acc.publicKey).address()).address();
+	}
+	
+	/**
+	 * 导出当前账户管理器中所有账户地址
+	 * 
+	 * @return
+	 */
+	public List<String> export() {
+		return Arrays.stream(uw.getContracts()).map(p -> p.address()).collect(Collectors.toList());
+	}
+	
 	public String address2UInt160(String address) {
 		return Wallet.toScriptHash(address).toString();
 	}
@@ -142,20 +185,6 @@ public class UserWalletManager {
 		} catch (RestException e) {
 			throw new RuntimeException(e);
 		}
-	}
-	
-	
-	public void setAuthType(String authType) {
-		this.restNode.setAuthType(authType);
-	}
-	
-	public void setAccessToken(String accessToken) {
-		this.restNode.setAccessToken(accessToken);
-	}
-	
-	public void setVersion(String version, String type) {
-		this.version = version;
-		this.type = type;
 	}
 	
 	/**
@@ -223,12 +252,12 @@ public class UserWalletManager {
 		if(context.isCompleted()){
 			signedTx4Reg.scripts = context.getScripts();
 		}
-		uw.saveTransaction(signedTx4Reg);
 		String txHex = Helper.toHexString(signedTx4Reg.toArray());
 		boolean f2 = restNode.sendRawTransaction(action, version, type, txHex);
 		String txid = signedTx4Reg.hash().toString();
 		System.out.println("reg.sign:"+f1+",rst:"+f2+",txid:"+ txid);
 		if(f2 && isWaitSync) {
+			uw.saveTransaction(signedTx4Reg);
 			wait(uw,txid); // 等待生效
 		}
 		return txid;
@@ -312,8 +341,6 @@ public class UserWalletManager {
 		return txid4Trf;
 	}
 	
-	
-	
 	// 1. 构造交易
 	/**
 	 * 构造注册资产交易
@@ -325,7 +352,7 @@ public class UserWalletManager {
 	 * @return	交易编号
 	 * @throws Exception
 	 */
-	public RegisterTransaction createRegTx(String issuer, String name, long amount, String desc, String controller, int precision) {
+	public RegisterTransaction makeRegisterTransaction(String issuer, String name, long amount, String desc, String controller, int precision) {
 		return uw.makeTransaction(getRegTx(getAccount(issuer), name, amount, desc, AssetType.Token, controller, precision), Fixed8.ZERO);
 	}
 	/**
@@ -339,8 +366,20 @@ public class UserWalletManager {
 	 * @return	交易编号
 	 * @throws Exception
 	 */
-	public IssueTransaction createIssTx(String sendAddr, String assetid, long amount, String recvAddr, String desc) {
-		return uw.makeTransaction(getIssTx(assetid, amount, recvAddr, recvAddr), Fixed8.ZERO);
+	public IssueTransaction makeIssueTransaction(String sendAddr, String assetid, long amount, String recvAddr, String desc) {
+		return uw.makeTransaction(getIssTx(assetid, amount, recvAddr, desc), Fixed8.ZERO);
+	}
+	/**
+	 * 构造分发资产交易(多个接收者)
+	 * 
+	 * @param sendAddr	资产控制者地址
+	 * @param list		接收者信息列表，包括接收者地址、接收资产编号、接收数量
+	 * @param desc		描述
+	 * @return	交易编号
+	 * @throws Exception
+	 */
+	public IssueTransaction makeIssueTransaction(String sendAddr, List<TxJoiner>list, String desc) {
+		return uw.makeTransaction(getIssTx(list, desc), Fixed8.ZERO);
 	}
 	/**
 	 * 构造转移资产交易
@@ -353,8 +392,40 @@ public class UserWalletManager {
 	 * @return	交易编号
 	 * @throws Exception
 	 */
-	public TransferTransaction createTrfTx(String sendAddr, String assetid, long amount, String recvAddr, String desc) {
+	public TransferTransaction makeTransferTransaction(String sendAddr, String assetid, long amount, String recvAddr, String desc) {
 		return uw.makeTransaction(getTrfTx(assetid, amount, recvAddr, desc), Fixed8.ZERO, getAddress(sendAddr));
+	}
+	/**
+	 * 构造转移资产交易(多个接收者)
+	 * 
+	 * @param sendAddr	资产控制者地址
+	 * @param list		接收者信息列表，包括接收者地址、接收资产编号、接收数量
+	 * @param desc		描述
+	 * @return	交易编号
+	 * @throws Exception
+	 */
+	public TransferTransaction makeTransferTransaction(String sendAddr, List<TxJoiner> list, String desc) {
+		return uw.makeTransaction(getTrfTx(list, desc), Fixed8.ZERO, getAddress(sendAddr));
+	}
+	/**
+	 * 构造状态更新交易
+	 * 
+	 * @param namespace
+	 * @param key
+	 * @param value
+	 * @param controller
+	 * @return
+	 */
+	public StateUpdateTransaction makeStateUpdateTransaction(String namespace, String key, String value, String controller) {
+		StateUpdateTransaction tx = new StateUpdateTransaction();
+		tx.attributes = new TransactionAttribute[0];
+		tx.inputs = new TransactionInput[0];
+		tx.outputs = new TransactionOutput[0];
+		tx.namespace = namespace.getBytes();
+		tx.key = key.getBytes();
+		tx.value = value.getBytes();
+		tx.updater = getAccount(controller).publicKey;
+		return tx;
 	}
 	// 2. 交易签名
 	/**
@@ -363,7 +434,7 @@ public class UserWalletManager {
 	 * @param tx	待签名的交易
 	 * @return	签名完成且序列化后的交易
 	 */
-	public String signTx(DNA.Core.Transaction tx) {
+	public String signatureData(DNA.Core.Transaction tx) {
 		SignatureContext context = new SignatureContext(tx);
 		boolean f5 = uw.sign(context);
 		if(f5 && context.isCompleted()){
@@ -371,9 +442,7 @@ public class UserWalletManager {
 		} else {
 			throw new RuntimeException("Signature incompleted");
 		}
-		uw.saveTransaction(tx);
-		String txHex = Helper.toHexString(tx.toArray());
-		return txHex;
+		return Helper.toHexString(tx.toArray());
 	}
 	// 3. 发送交易
 	/**
@@ -383,8 +452,12 @@ public class UserWalletManager {
 	 * @return		发送成功与否
 	 * @throws RestException
 	 */
-	public boolean sendTx(DNA.Core.Transaction tx) throws RestException {
-		return sendTx(Helper.toHexString(tx.toArray()));
+	public boolean sendTransaction(DNA.Core.Transaction tx) throws RestException {
+		if(sendTransaction(Helper.toHexString(tx.toArray()))) {
+			uw.saveTransaction(tx);
+			return true;
+		}
+		return false;
 	}
 	/**
 	 * 发送交易
@@ -393,7 +466,7 @@ public class UserWalletManager {
 	 * @return		发送成功与否
 	 * @throws RestException
 	 */
-	public boolean sendTx(String txHex) throws RestException {
+	public boolean sendTransaction(String txHex) throws RestException {
 		return restNode.sendRawTransaction(action, version, type, txHex);
 	}
 	
@@ -478,7 +551,7 @@ public class UserWalletManager {
 	private RegisterTransaction getRegTx(Account acc, String assetName, long assetAmount, String txDesc, AssetType assetType, String controller, int precision) {
 		RegisterTransaction tx = new RegisterTransaction();
 		
-		tx.precision = (byte) precision;						// 精度
+		tx.precision = 8;//(byte) precision;						// 精度
 		tx.assetType = AssetType.Token;			// 资产类型
 		tx.recordType = RecordType.UTXO;			// 记账模式
 		tx.nonce = (int)Math.random()*10;		// 随机数
@@ -488,7 +561,6 @@ public class UserWalletManager {
 		tx.amount = Fixed8.parse(String.valueOf(assetAmount));	
 		tx.issuer = acc.publicKey;	
 		tx.admin = Wallet.toScriptHash(controller); 
-//		tx.admin = Wallet.toScriptHash(Contract.createSignatureContract(acc.publicKey).address()); 
 		tx.outputs = new TransactionOutput[0];
 		if(txDesc != null && txDesc.length() > 0) {
 			tx.attributes = new TransactionAttribute[1];
@@ -510,8 +582,26 @@ public class UserWalletManager {
 			tx.attributes[0] = new TransactionAttribute();
 			tx.attributes[0].usage = TransactionAttributeUsage.Description;
 			tx.attributes[0].data = (txDesc+new Date().toString()).getBytes();
-		} else {
-			tx.attributes = new TransactionAttribute[0];
+		}
+		return tx;
+	}
+	private IssueTransaction getIssTx(List<TxJoiner> recvlist, String txDesc) {
+		int size = recvlist.size();
+		IssueTransaction tx = new IssueTransaction();
+		tx.outputs = new TransactionOutput[1];
+		tx.outputs = new TransactionOutput[size];
+		for(int i=0; i<size; ++i) {
+			TxJoiner recv = recvlist.get(i);
+			tx.outputs[i] = new TransactionOutput();
+			tx.outputs[i].assetId = UInt256.parse(recv.assetid);
+			tx.outputs[i].value = Fixed8.parse(String.valueOf(recv.value));
+			tx.outputs[i].scriptHash = Wallet.toScriptHash(recv.address);
+		}
+		if(txDesc != null && txDesc.length() > 0) {
+			tx.attributes = new TransactionAttribute[1];
+			tx.attributes[0] = new TransactionAttribute();
+			tx.attributes[0].usage = TransactionAttributeUsage.Description;
+			tx.attributes[0].data = (txDesc+new Date().toString()).getBytes();
 		}
 		return tx;
 	}
@@ -528,11 +618,30 @@ public class UserWalletManager {
 			tx.attributes[0] = new TransactionAttribute();
 			tx.attributes[0].usage = TransactionAttributeUsage.Description;
 			tx.attributes[0].data = (txDesc+new Date().toString()).getBytes();
-		} else {
-			tx.attributes = new TransactionAttribute[0];
 		}
 		return tx;
 	}
+	
+	private TransferTransaction getTrfTx(List<TxJoiner> recvList, String txDesc) {
+		int size = recvList.size();
+		TransferTransaction tx = new TransferTransaction();
+		tx.outputs = new TransactionOutput[size];
+		for(int i=0; i<size; ++i) {
+			TxJoiner recv = recvList.get(i);
+			tx.outputs[i] = new TransactionOutput();
+			tx.outputs[i].assetId = UInt256.parse(recv.assetid);
+			tx.outputs[i].value = Fixed8.parse(String.valueOf(recv.value));
+			tx.outputs[i].scriptHash = Wallet.toScriptHash(recv.address);
+		}
+		if(txDesc != null && txDesc.length() > 0) {
+			tx.attributes = new TransactionAttribute[1];
+			tx.attributes[0] = new TransactionAttribute();
+			tx.attributes[0].usage = TransactionAttributeUsage.Description;
+			tx.attributes[0].data = (txDesc+new Date().toString()).getBytes();
+		}
+		return tx;
+	}
+	
 	private RecordTransaction getRcdTx(String data, String txDesc) {
 		RecordTransaction rcdTx = new RecordTransaction();
 		rcdTx.recordType = "";
@@ -548,7 +657,7 @@ public class UserWalletManager {
 		}  else {
 			rcdTx.attributes = new TransactionAttribute[0];
 		}
-		rcdTx.scripts = new Script[0];
+		rcdTx.scripts = new Program[0];
 		System.out.println("txid.len="+rcdTx.hash().toString().length());
 		return rcdTx;
 	}

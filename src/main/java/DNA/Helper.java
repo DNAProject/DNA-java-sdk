@@ -3,6 +3,8 @@ package DNA;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.Arrays;
+
 
 /**
  * Byte Handle Helper
