@@ -47,7 +47,6 @@ public class RestNode {
 		Result rr = JSON.parseObject(rs, Result.class);
 		if(rr.Error == 0) {
 			try {
-//				return Transaction.fromJsonD(new JsonReader(JObject.parse(rr.Result)));
 				return Transaction.deserializeFrom(Helper.hexToBytes(rr.Result));
 			} catch (IOException e) {
 				throw new RestRuntimeException("Transaction.fromJsonD(txid) failed", e);
@@ -81,7 +80,6 @@ public class RestNode {
 			throw new RestRuntimeException(rr.toString());
 		}
 		try {
-//			return JsonSerializable.from(JObject.parse(rr.Result), Block.class);
 			return Serializable.from(DNA.Helper.hexToBytes(rr.Result), Block.class);
 		} catch (InstantiationException | IllegalAccessException e) {
 			throw new RestRuntimeException("Block.deserialize(height) failed", e);
@@ -95,14 +93,30 @@ public class RestNode {
 			throw new RestRuntimeException(rr.toString());
 		}
 		try {
-//			return JsonSerializable.from(JObject.parse(rr.Result), Block.class);
 			return Serializable.from(DNA.Helper.hexToBytes(rr.Result), Block.class);
 		} catch (InstantiationException | IllegalAccessException e) {
 			throw new RestRuntimeException("Block.deserialize(hash) failed", e);
 		}
+	}
+	
+	public void getBalance(String address, String assetid) {
+		
+	}
+	public void getUTXOs(String address, String assetid) {
+		
+	}
+	public void getUTXO(String addres) {
 		
 	}
 	
+	public String getStateUpdate(String namespace, String key) throws RestException {
+		String rs = restClient.getStateUpdate(authType, accessToken, namespace, key);
+		Result rr = JSON.parseObject(rs, Result.class);
+		if(rr.Error != 0) {
+			throw new RestRuntimeException(rr.toString());
+		}
+		return rr.Result;
+	}
 	// ********************************************************************************
 	public Transaction getRawTransactionJson(String txid) throws RestException {
 		String rs = restClient.getTransaction(authType, accessToken, txid);

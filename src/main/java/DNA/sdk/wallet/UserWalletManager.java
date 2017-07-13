@@ -40,6 +40,7 @@ import DNA.sdk.info.account.AccountAsset;
 import DNA.sdk.info.account.AccountInfo;
 import DNA.sdk.info.account.Asset;
 import DNA.sdk.info.asset.AssetInfo;
+import DNA.sdk.info.asset.UTXOInfo;
 import DNA.sdk.info.mutil.TxJoiner;
 import DNA.sdk.info.transaction.TransactionInfo;
 import DNA.sdk.info.transaction.TxInputInfo;
@@ -163,12 +164,16 @@ public class UserWalletManager {
 		return uw.getContract(Contract.createSignatureContract(acc.publicKey).address()).address();
 	}
 	
+	public List<Account> listAcc() {
+		return Arrays.stream(uw.getAccounts()).collect(Collectors.toList());
+	}
+	
 	/**
 	 * 导出当前账户管理器中所有账户地址
 	 * 
 	 * @return
 	 */
-	public List<String> export() {
+	public List<String> listAccount() {
 		return Arrays.stream(uw.getContracts()).map(p -> p.address()).collect(Collectors.toList());
 	}
 	
@@ -453,7 +458,7 @@ public class UserWalletManager {
 	 * @throws RestException
 	 */
 	public boolean sendTransaction(DNA.Core.Transaction tx) throws RestException {
-		if(sendTransaction(Helper.toHexString(tx.toArray()))) {
+		if(sendData(Helper.toHexString(tx.toArray()))) {
 			uw.saveTransaction(tx);
 			return true;
 		}
@@ -466,7 +471,7 @@ public class UserWalletManager {
 	 * @return		发送成功与否
 	 * @throws RestException
 	 */
-	public boolean sendTransaction(String txHex) throws RestException {
+	public boolean sendData(String txHex) throws RestException {
 		return restNode.sendRawTransaction(action, version, type, txHex);
 	}
 	
@@ -774,6 +779,26 @@ public class UserWalletManager {
 		}
 		return tx.outputs[input.prevIndex];
 	}
+	
+	public void getBalance() {
+		
+	}
+	public UTXOInfo getUTXOs() {
+		
+		return null;
+	}
+	public void getUTXO() {
+		
+	}
+	
+	public String getStateUpdate(String namespace, String key) {
+		try {
+			return restNode.getStateUpdate(namespace, key);
+		} catch (RestException e) {
+			throw new RuntimeException(e);
+		}
+	}
+	
 	
 	public static Block fromWebSocketData(String ss) {
 		return GetBlockTransactionUtils.from(ss);
