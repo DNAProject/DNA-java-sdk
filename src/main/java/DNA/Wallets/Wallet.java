@@ -76,11 +76,11 @@ public abstract class Wallet implements AutoCloseable {
             saveStoredData("MasterKey", AES.encrypt(masterKey, passwordKey, iv));
             saveStoredData("Version", new byte[] { 0, 7, 0, 0 });
             saveStoredData("Height", ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN).putInt(current_height).array());
-         
         } else {
             byte[] passwordHash = loadStoredData("PasswordHash");
-            if (passwordHash != null && !Arrays.equals(passwordHash, Digest.sha256(passwordKey)))
+            if (passwordHash != null && !Arrays.equals(passwordHash, Digest.sha256(passwordKey))) {
                 throw new BadPaddingException();
+            }
             this.iv = loadStoredData("IV");
 			this.masterKey = AES.decrypt(loadStoredData("MasterKey"), passwordKey, iv);
             this.accounts = Arrays.stream(loadAccounts()).collect(Collectors.toMap(p -> p.publicKeyHash, p -> p));
@@ -414,10 +414,12 @@ public abstract class Wallet implements AutoCloseable {
     
     protected boolean isWalletTransaction(Transaction tx) {
     	synchronized (contracts) {
-            if (Arrays.stream(tx.outputs).anyMatch(p -> contracts.containsKey(p.scriptHash)))
+            if (Arrays.stream(tx.outputs).anyMatch(p -> contracts.containsKey(p.scriptHash))) {
                 return true;
-            if (Arrays.stream(tx.scripts).anyMatch(p -> contracts.containsKey(Program.toScriptHash(p.parameter))))
+            }
+            if (Arrays.stream(tx.scripts).anyMatch(p -> contracts.containsKey(Program.toScriptHash(p.parameter)))) {
                 return true;
+            }
         }
         return false;
     }

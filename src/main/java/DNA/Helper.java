@@ -1,6 +1,10 @@
 package DNA;
 
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Date;
+import java.util.Arrays;
+
 
 /**
  * Byte Handle Helper
@@ -58,5 +62,9 @@ public class Helper {
 			return Arrays.copyOfRange(bt, 1, 33);
 		}
 		return bt;
+	}
+
+	public static String now() {
+		return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date());
 	}
 }

@@ -19,6 +19,10 @@ public class RestNode {
 	public RestNode(String restUrl) {
 		restClient = new RestClient(restUrl);
 	}
+	public RestNode(String restUrl, String accessToken) {
+		restClient = new RestClient(restUrl);
+		setAccessToken(accessToken);
+	}
 	
 	public RestNode(String restUrl, String accessToken) {
 		restClient = new RestClient(restUrl);
@@ -43,7 +47,8 @@ public class RestNode {
 	}
 	
 	public Transaction getRawTransaction(String txid) throws RestException {
-		String rs = restClient.getTransaction(authType, accessToken, Helper.reverse(txid));
+//		String rs = restClient.getTransaction(authType, accessToken, Helper.reverse(txid)); // DNA-jj
+		String rs = restClient.getTransaction(authType, accessToken, txid);	// DNA-195
 		Result rr = JSON.parseObject(rs, Result.class);
 		if(rr.Error == 0) {
 			try {
@@ -56,8 +61,10 @@ public class RestNode {
 	}
 	
 	public String getAsset(String assetid) throws RestException {
+//		String rs = restClient.getAsset(authType, accessToken, Helper.reverse(assetid));
 		String rs = restClient.getAsset(authType, accessToken, assetid);
 		Result rr = JSON.parseObject(rs, Result.class);
+		System.out.println("rs:"+rr);
 		if(rr.Error != 0) {
 			throw new RestRuntimeException(rr.toString());
 		}

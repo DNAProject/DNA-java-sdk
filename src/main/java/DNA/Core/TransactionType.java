@@ -33,19 +33,19 @@ public enum TransactionType {
      */
     RegisterTransaction(0x40),
     /**
-     *  used for transfer Transaction, this is 
+     *  used for transfering Transaction, this is 
      */
     TransferTransaction(0x80), 
     /**
-     * 存证交易
+     * used for storing certificate
      */
     RecordTransaction(0x81),
     
-	/**
+    /**
      * 
      */
     StateUpdateTransaction(0x90),
-	
+    
     ;
 
     private byte value;

@@ -1,18 +1,29 @@
 package DNA.Implementations.Wallets.SQLite;
 
 import java.io.File;
-import java.nio.*;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.sql.Date;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
-import javax.crypto.*;
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
 
-import DNA.*;
-import DNA.Core.*;
+import DNA.Fixed8;
+import DNA.UInt160;
+import DNA.UInt256;
+import DNA.Core.Block;
+import DNA.Core.TransactionInput;
+import DNA.Core.TransactionType;
 import DNA.IO.Serializable;
-import DNA.Wallets.*;
+import DNA.Implementations.Wallets.IUserManager;
+import DNA.Wallets.CoinState;
+import DNA.Wallets.Wallet;
 
-public class UserWallet extends Wallet {
+public class UserWallet extends Wallet implements IUserManager {
 
     protected UserWallet(String path, String password, boolean create) throws BadPaddingException, IllegalBlockSizeException {
         super(path, password, create);
@@ -133,7 +144,7 @@ public class UserWallet extends Wallet {
     }
     
     @Override
-    protected DNA.Wallets.Contract[] loadContracts() {
+    public DNA.Wallets.Contract[] loadContracts() {
         try (WalletDataContext ctx = new WalletDataContext(dbPath())) {
         	Contract[] entities = ctx.getContracts();
         	DNA.Wallets.Contract[] contracts = new DNA.Wallets.Contract[entities.length];
