@@ -159,7 +159,7 @@ public class UserWalletManager {
 	 * @param prikey
 	 * @return
 	 */
-	public String createAccount(String prikey) {
+	public String createAccountsFromPrivateKey(String prikey) {
 		Account acc = uw.createAccount(Helper.hexToBytes(prikey));
 		return uw.getContract(Contract.createSignatureContract(acc.publicKey).address()).address();
 	}
@@ -173,7 +173,7 @@ public class UserWalletManager {
 	 * 
 	 * @return
 	 */
-	public List<String> listAccount() {
+	public List<String> listAccountAddress() {
 		return Arrays.stream(uw.getContracts()).map(p -> p.address()).collect(Collectors.toList());
 	}
 	

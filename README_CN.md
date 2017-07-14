@@ -77,6 +77,9 @@ eg:
 
 List<String>  list = wm.createAccount(numCount);
 
+<<<<<<< HEAD
+### 3.2 注册资产
+=======
 
 
 ### 3.2 导入私钥
@@ -93,6 +96,7 @@ eg:
 String address = wm.loadPrivakey(String privateKey);
 
 ### 3.3 注册资产
+>>>>>>> branch 'dev' of https://github.com/DNAProject/DNASDKJava.git
 
 通过传递资产的基本信息来产生一笔区块链上合法的资产，返回资产编号。后续的资产类操作就可以使用该资产编号。
 
@@ -320,6 +324,63 @@ Block block = UserWalletManager.fromWebSocketData(dat);
 
 
 
+<<<<<<< HEAD
+### 3.12 导入私钥
+
+根据导入可视化私钥(字节数组转换成十六进制的字符串)方式来创建账户
+
+| 参数   | 字段         | 类型     | 描述   | 说明                      |
+| ---- | ---------- | ------ | ---- | ----------------------- |
+| 输入参数 | privateKey | String | 私钥信息 | 32位字节数组转成十六进制64位字符串类型数据 |
+| 输出参数 | address    | String | 账户地址 | 合约地址是以A开头的34位字符串        |
+
+eg:
+
+String address = wm.createAccountsFromPrivateKey(String privateKey);
+
+
+
+### 3.13 查看所有地址
+
+通过账户管理器实例可查询该管理器下所有用户地址信息。
+
+| 参数   | 字段   | 类型           | 描述     | 说明     |
+| ---- | ---- | ------------ | ------ | ------ |
+| 输入参数 | 空    | 空            | 参数为空   | 参数为空   |
+| 输出参数 | list | List<String> | 账户地址列表 | 账户地址列表 |
+
+eg:
+
+List<String>  list = wm.listAccountAddress();
+
+
+
+### 3.14 账本状态存储
+
+特定用户可通过构造状态更新交易存储信息至区块链账本。
+
+| 参数   | 字段         | 类型     | 描述         | 说明             |
+| ---- | ---------- | ------ | ---------- | -------------- |
+| 输入参数 | namespace  | String | 命名空间       | 暂无长度限制         |
+|      | key        | String | 存储数据key值   | 暂无长度限制         |
+|      | value      | String | 存储数据value值 | 暂无长度限制         |
+|      | controller | String | 特殊用户地址     | 地址是以A开头的34位字符串 |
+| 输出参数 | txid       | String | 交易编号       | 交易编号是64位字符串    |
+
+
+
+### 3.15 账本状态查询
+
+通过指定命名空间和存储数据key值可查询对应的value数据。
+
+| 参数   | 字段        | 类型     | 描述         | 说明     |
+| ---- | --------- | ------ | ---------- | ------ |
+| 输入参数 | namespace | String | 命名空间       | 暂无长度限制 |
+|      | key       | String | 存储数据key值   | 暂无长度限制 |
+| 输出参数 | value     | String | 存储数据value值 | 暂无长度限制 |
+
+
+=======
 ### 3.13 所有账户
 
 通过账户管理器实例可以查询当前管理器中所有账户地址。
@@ -328,6 +389,7 @@ Block block = UserWalletManager.fromWebSocketData(dat);
 | ---- | ---- | ------------ | ------ | ------ |
 | 输入参数 | 空    | 空            | 参数为空   | 参数为空   |
 | 输出参数 | list | List<String> | 账户地址列表 | 账户地址列表 |
+>>>>>>> branch 'dev' of https://github.com/DNAProject/DNASDKJava.git
 
 
 
@@ -543,6 +605,68 @@ List<String> list = wm.listAccount();
 ```
 
 
+
+
+
+### 4.12 导入私钥
+
+```
+// 打开账户管理器
+String path = "./dat/tsGo_01.db3";
+UserWalletManager wm = UserWalletManager.getWallet(path);
+// 根据私钥创建账户
+String prikey = "";
+String address = wm.createAccountsFromPrivateKey(prikey);
+```
+
+
+
+### 4.13 查看所有地址
+
+```
+// 打开账户管理器
+String path = "./dat/tsGo_01.db3";
+UserWalletManager wm = UserWalletManager.getWallet(path);
+// 查看地址
+List<String> address = wm.listAccountAddress();
+```
+
+
+
+### 4.14 账本状态存储
+
+```
+// 打开账户管理器
+String path = "./dat/tsGo_01.db3";
+String url = "http://localhost:20334";
+String accessToken = "";				// 非必需项，如开启OAuth认证，则需要填写
+UserWalletManager wm = UserWalletManager.getWallet(path, url, accessToken);
+
+// 存储账本状态
+String namespace = "";
+String key = "";
+String value = "";
+String controller = "";
+// S1:构造交易
+Transaction tx = wm.makeStateUpdateTransaction(namesapce, key, value, controller);
+// S2:交易签名
+String txHex = wm.signTx(tx);
+// S3:发送交易
+boolean rr = wm.sendTx(txHex);
+```
+
+
+
+### 4.15 账本状态查询
+
+```
+// 打开账户管理器
+String url = "http://localhost:20334";
+String accessToken = "";				// 非必需项，如开启OAuth认证，则需要填写
+UserWalletManager wm = UserWalletManager.getWallet(url, accessToken);
+// 查询账本状态
+String val = wm.getStateUpdate(namespace, key);
+```
 
 
 
