@@ -35,8 +35,6 @@ import java.util.List;
  [调用方法]
   */
 public class WebWalletDao {
-	public WebWalletDao() {
-	}
 	
     private String[] sql = new String[] {""
     		,"insert into tbl_onchainweb_restful_account values(?,?,?)"

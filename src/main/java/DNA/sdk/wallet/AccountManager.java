@@ -1,4 +1,5 @@
 package DNA.sdk.wallet;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -29,6 +30,8 @@ import DNA.Core.TransactionOutput;
 import DNA.Core.TransferTransaction;
 import DNA.Core.Scripts.Program;
 import DNA.Implementations.Blockchains.Rest.RestBlockchain;
+import DNA.Implementations.Wallets.IUserManager;
+import DNA.Implementations.Wallets.UserManagerFactory;
 import DNA.Implementations.Wallets.SQLite.UserWallet;
 import DNA.Network.Rest.RestException;
 import DNA.Network.Rest.RestNode;
@@ -36,11 +39,11 @@ import DNA.Wallets.Account;
 import DNA.Wallets.Contract;
 import DNA.Wallets.Wallet;
 import DNA.Websocket.Utils.GetBlockTransactionUtils;
+import DNA.sdk.dbpool.DBParamInitailer;
 import DNA.sdk.info.account.AccountAsset;
 import DNA.sdk.info.account.AccountInfo;
 import DNA.sdk.info.account.Asset;
 import DNA.sdk.info.asset.AssetInfo;
-import DNA.sdk.info.asset.UTXOInfo;
 import DNA.sdk.info.mutil.TxJoiner;
 import DNA.sdk.info.transaction.TransactionInfo;
 import DNA.sdk.info.transaction.TxInputInfo;
@@ -48,74 +51,89 @@ import DNA.sdk.info.transaction.TxOutputInfo;
 
 import com.alibaba.fastjson.JSON;
 
-
-/**
- * Account Manager (sqlite)
- * 
- * @author 12146
- *
- */
-public class UserWalletManager {
+public class AccountManager {
 	private String action = "sendrawtransaction",version = "v001",type = "t001";
-	private UserWallet uw;
+	private IUserManager uw;
 	private RestNode restNode;
-	
 	private boolean isWaitSync = true;
+	
 	public void setWaitSync(boolean isWaitSync) {
 		this.isWaitSync = isWaitSync;
 	}
 	
-	public static UserWalletManager getWallet(String path, String url, String accessToken) {
-		UserWalletManager wm = new UserWalletManager();
-		// init BlockRestNode(for getBlock)
+	{
+		/**
+		 * AccountManager.setPKGenerateAlgorithm("ECC"); ECC/SM2/default(ECC)
+		 * AccountManager.setDNAConnectWay("Rest");	Rest/Rpc/default(Rest)
+		 * AccountManager wm = AccountManager.getWallet(path, url, token);
+		 * 
+		 * AccountManager.setPKGenerateAlgorithm("ECC"); ECC/SM2/default(ECC)
+		 * AccountManager.setDNAConnectWay("Rest");	Rest/Rpc/default(Rest)
+		 * AccountManager.setDBConnectInfo(dbUrl, dbDriver, dbUsername, dbPassword);
+		 * AccountManager wm = AccountManager.getWallet(username, password, url, token);
+		 * 
+		 * 
+		 * 启动同步
+		 * wm.startSyncBlock();
+		 * 
+		 * 创建账户
+		 * wm.createAccount();
+		 * 
+		 * 注册资产
+		 * wm.reg/iss/trf/...
+		 * 
+		 * 查询操作
+		 * wm.query...
+		 * 
+		 */
+	}
+	
+	public static void setPKGenerateAlgorithm(String algorithm) {
+		// ECC or SM2
+	}
+	
+	public static void setDBConnectInfo(String dbUrl, String dbDriver, String dbUsername, String dbPassword) {
+		DBParamInitailer.init(dbUrl, dbDriver, dbUsername, dbPassword, 10);
+	}
+	
+	public static AccountManager getWallet(String adminName, String adminPswd, String url, String accessToken) {
+		AccountManager wm = new AccountManager();
 		wm.initBlockRestNode(url, accessToken);
-		
-		// init RestNode(for send/get Tx)
 		wm.initRestNode(url, accessToken);
-		
-		// init user manager
+		wm.initUserManager(adminName, adminPswd);
+		return wm;
+	}
+	
+	
+	public static AccountManager getWallet(String path, String url, String accessToken) {
+		AccountManager wm = new AccountManager();
+		wm.initBlockRestNode(url, accessToken);
+		wm.initRestNode(url, accessToken);
 		wm.initWallet(path);
 		return wm;
 	}
 	
-	public static UserWalletManager getWallet(String url, String accessToken) {
-		UserWalletManager wm = new UserWalletManager();
+	public static AccountManager getWallet(String url, String accessToken) {
+		AccountManager wm = new AccountManager();
 		wm.initRestNode(url, accessToken);
 		return wm;
 	}
 	
-	public static UserWalletManager getWallet(String path) {
-		UserWalletManager wm = new UserWalletManager();
+	public static AccountManager getWallet(String path) {
+		AccountManager wm = new AccountManager();
 		wm.initWallet(path);
 		return wm;
 	}
 	
-	private UserWalletManager() {
+	private AccountManager() {
 	}
 	
 	private void initBlockRestNode(String url, String token) {
 		Blockchain.register(new RestBlockchain(new RestNode(url, token)));
 	}
 	
-	public void initRestNode(String url, String token) {
+	private void initRestNode(String url, String token) {
 		this.restNode = new RestNode(url, token);
-	}
-	
-	public void setAccessToken(String accessToken) {
-		this.restNode.setAccessToken(accessToken);
-	}
-	
-	public void setAuthType(String authType) {
-		this.restNode.setAuthType(authType);
-	}
-	
-	public void setVersion(String version, String type) {
-		this.version = version;
-		this.type = type;
-	}
-	
-	public UserWallet getWallet(){
-		return uw;
 	}
 	
 	private void initWallet(String path) {
@@ -125,15 +143,38 @@ public class UserWalletManager {
 			uw = UserWallet.create(path, "0x123456");
 		}
 	}
+	private void initUserManager(String user, String pswd) {
+		uw = UserManagerFactory.newOrclUserManager(user, pswd);
+	}
+	
+	/**
+	 * 启动同步线程
+	 */
 	public void startSyncBlock() {
 		uw.start();
 	}
+	
 	public void stopSyncBlock() {
-		uw.close();;
+		uw.close();
 	}
+	
 	public boolean hasFinishedSyncBlock() {
-		return uw.hasFinishedSyncBlock();
+		try {
+			return uw.hasFinishedSyncBlock();
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
 	}
+	
+	/**
+	 * 更新访问令牌
+	 * 
+	 * @param accessToken
+	 */
+	public void updateToken(String accessToken) {
+		restNode.setAccessToken(accessToken);
+	}
+	
 	
 	/**
 	 * 创建单个账户
@@ -159,17 +200,13 @@ public class UserWalletManager {
 	 * @param prikey
 	 * @return
 	 */
-	public String createAccount(String prikey) {
+	public String loadPrivateKey(String prikey) {
 		Account acc = uw.createAccount(Helper.hexToBytes(prikey));
 		return uw.getContract(Contract.createSignatureContract(acc.publicKey).address()).address();
 	}
 	
-	public List<Account> listAcc() {
-		return Arrays.stream(uw.getAccounts()).collect(Collectors.toList());
-	}
-	
 	/**
-	 * 导出当前账户管理器中所有账户地址
+	 * 导出所有账户地址
 	 * 
 	 * @return
 	 */
@@ -180,6 +217,7 @@ public class UserWalletManager {
 	public String address2UInt160(String address) {
 		return Wallet.toScriptHash(address).toString();
 	}
+	
 	public String uint1602Address(String uint160) {
 		return Wallet.toAddress(UInt160.parse(uint160));
 	}
@@ -190,6 +228,19 @@ public class UserWalletManager {
 		} catch (RestException e) {
 			throw new RuntimeException(e);
 		}
+	}
+	
+	public void setAuthType(String authType) {
+		this.restNode.setAuthType(authType);
+	}
+	
+	public void setAccessToken(String accessToken) {
+		this.restNode.setAccessToken(accessToken);
+	}
+	
+	public void setVersion(String version, String type) {
+		this.version = version;
+		this.type = type;
 	}
 	
 	/**
@@ -346,6 +397,8 @@ public class UserWalletManager {
 		return txid4Trf;
 	}
 	
+	
+	
 	// 1. 构造交易
 	/**
 	 * 构造注册资产交易
@@ -412,6 +465,7 @@ public class UserWalletManager {
 	public TransferTransaction makeTransferTransaction(String sendAddr, List<TxJoiner> list, String desc) {
 		return uw.makeTransaction(getTrfTx(list, desc), Fixed8.ZERO, getAddress(sendAddr));
 	}
+	
 	/**
 	 * 构造状态更新交易
 	 * 
@@ -447,6 +501,7 @@ public class UserWalletManager {
 		} else {
 			throw new RuntimeException("Signature incompleted");
 		}
+		uw.saveTransaction(tx);
 		return Helper.toHexString(tx.toArray());
 	}
 	// 3. 发送交易
@@ -493,14 +548,6 @@ public class UserWalletManager {
 		System.out.println("rcd.sign:null, rst:"+f+",txid:"+txid);
 		return txid;
 	}
-	public boolean storeCert(String data) throws Exception {
-		RecordTransaction tx = getRcdTx(data, null);
-		String txHex = Helper.toHexString(tx.toArray());;
-		boolean f = restNode.sendRawTransaction(action, version, type, txHex);
-		
-		return f;
-	}
-	
 	/**
 	 * 取证
 	 * 
@@ -519,7 +566,7 @@ public class UserWalletManager {
 	
 	
 	// 获取账户
-	private Account getAccount(String address) {
+	public Account getAccount(String address) {
 		return uw.getAccount(uw.getContract(address).publicKeyHash);
 	}
 	// 获取地址
@@ -536,7 +583,7 @@ public class UserWalletManager {
 		wait(uw, txid);
 	}
 	// 等待Tx生效
-	private void wait(Wallet uw, String txid) {
+	private void wait(IUserManager uw, String txid) {
 		int count = 3;	// 最长等待1分钟
 		while(--count > 0) {
 			Map<Transaction, Integer> txs = uw.LoadTransactions();
@@ -566,6 +613,7 @@ public class UserWalletManager {
 		tx.amount = Fixed8.parse(String.valueOf(assetAmount));	
 		tx.issuer = acc.publicKey;	
 		tx.admin = Wallet.toScriptHash(controller); 
+//		tx.admin = Wallet.toScriptHash(Contract.createSignatureContract(acc.publicKey).address()); 
 		tx.outputs = new TransactionOutput[0];
 		if(txDesc != null && txDesc.length() > 0) {
 			tx.attributes = new TransactionAttribute[1];
@@ -697,13 +745,13 @@ public class UserWalletManager {
 		asset.address = con.address();
 		asset.canUseAssets = new ArrayList<Asset>();
 		asset.freezeAssets = new ArrayList<Asset>();
-		Arrays.stream(uw.findUnspentCoins()).forEach(p -> {
+		Arrays.stream(uw.findUnspentCoins()).filter(p -> address.equals(Wallet.toAddress(p.scriptHash))).forEach(p -> {
 			Asset as = new Asset();
 			as.assetid = p.assetId.toString();
 			as.amount = p.value.toLong();
 			asset.canUseAssets.add(as);
 		});
-		Arrays.stream(uw.findUnconfirmedCoins()).forEach(p -> {
+		Arrays.stream(uw.findUnconfirmedCoins()).filter(p -> address.equals(Wallet.toAddress(p.scriptHash))).forEach(p -> {
 			Asset as = new Asset();
 			as.assetid = p.assetId.toString();
 			as.amount = p.value.toLong();
@@ -779,26 +827,6 @@ public class UserWalletManager {
 		}
 		return tx.outputs[input.prevIndex];
 	}
-	
-	public void getBalance() {
-		
-	}
-	public UTXOInfo getUTXOs() {
-		
-		return null;
-	}
-	public void getUTXO() {
-		
-	}
-	
-	public String getStateUpdate(String namespace, String key) {
-		try {
-			return restNode.getStateUpdate(namespace, key);
-		} catch (RestException e) {
-			throw new RuntimeException(e);
-		}
-	}
-	
 	
 	public static Block fromWebSocketData(String ss) {
 		return GetBlockTransactionUtils.from(ss);

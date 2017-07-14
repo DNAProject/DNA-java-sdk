@@ -90,7 +90,7 @@ public class RestHttp {
     }
     
     public static String post(String url, String body) throws IOException, NoSuchAlgorithmException, NoSuchProviderException, KeyManagementException {
-    	System.out.println(String.format("POST url=%s, body=%s", url, body));
+//    	System.out.println(Helper.now() + String.format("POST url=%s, body=%s", url, body));
     	if(url.startsWith("https")){
     		return post(url, body, true);
     	}else{
@@ -147,7 +147,7 @@ public class RestHttp {
         return sb.toString();
     }
     public static String get(String url/*,String body*/) throws KeyManagementException, NoSuchAlgorithmException, NoSuchProviderException, IOException {
-//    	System.out.println(String.format("GET url=%s, params=%s", url, null));
+//    	System.out.println(Helper.now() + String.format(" GET url=%s, params=%s", url, null));
     	if(url.startsWith("https")){
     		return get(url, true);
         }else{
