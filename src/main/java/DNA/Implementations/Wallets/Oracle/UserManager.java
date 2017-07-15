@@ -19,6 +19,7 @@ import DNA.Cryptography.ECC;
 import DNA.IO.Serializable;
 import DNA.Implementations.Wallets.AbstractWallet;
 import DNA.Implementations.Wallets.IUserManager;
+import DNA.Network.Rest.RestException;
 import DNA.Wallets.CoinState;
 
 public class UserManager extends AbstractWallet implements IUserManager {
@@ -165,7 +166,7 @@ public class UserManager extends AbstractWallet implements IUserManager {
     		entity.assetId = p.assetId.toArray();
     		entity.value = p.value.getData();
     		entity.scriptHash = p.scriptHash.toArray();
-    		entity.state = CoinState.Unspent.ordinal();
+    		entity.state = p.getState().ordinal();
     		return entity;
     	}).toArray(Coin[]::new), policy);
     	userDao.updateCoin(Arrays.stream(changed).map(p -> {
@@ -253,11 +254,7 @@ public class UserManager extends AbstractWallet implements IUserManager {
 		}
 	}
 	
-	public boolean hasFinishedSyncBlock() {
-		try {
-			return Blockchain.current().height() == walletHeight();
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
+	public boolean hasFinishedSyncBlock() throws Exception {
+		return super.hasFinishedSyncBlock();
 	}
 }

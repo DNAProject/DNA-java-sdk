@@ -652,11 +652,7 @@ public abstract class Wallet implements AutoCloseable {
     	return path;
     }
     
-    public boolean hasFinishedSyncBlock() {
-    	try {
-			return Blockchain.current().height() <= walletHeight();
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
+    public boolean hasFinishedSyncBlock() throws Exception {
+		return Blockchain.current().height() == walletHeight();
     }
 }

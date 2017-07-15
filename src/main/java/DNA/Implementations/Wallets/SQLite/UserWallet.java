@@ -219,7 +219,7 @@ public class UserWallet extends Wallet implements IUserManager {
     		entity.assetId = p.assetId.toArray();
     		entity.value = p.value.getData();
     		entity.scriptHash = p.scriptHash.toArray();
-    		entity.state = CoinState.Unspent.ordinal();
+    		entity.state = p.getState().ordinal();
     		return entity;
     	}).toArray(Coin[]::new));
     	ctx.update(Arrays.stream(changed).map(p -> {

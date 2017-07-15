@@ -131,7 +131,7 @@ public class UserWalletManager {
 	public void stopSyncBlock() {
 		uw.close();;
 	}
-	public boolean hasFinishedSyncBlock() {
+	public boolean hasFinishedSyncBlock() throws Exception {
 		return uw.hasFinishedSyncBlock();
 	}
 	
@@ -438,14 +438,15 @@ public class UserWalletManager {
 	 * 
 	 * @param tx	待签名的交易
 	 * @return	签名完成且序列化后的交易
+	 * @throws Exception 
 	 */
-	public String signatureData(DNA.Core.Transaction tx) {
+	public String signatureData(DNA.Core.Transaction tx) throws Exception {
 		SignatureContext context = new SignatureContext(tx);
 		boolean f5 = uw.sign(context);
 		if(f5 && context.isCompleted()){
 			tx.scripts = context.getScripts();
 		} else {
-			throw new RuntimeException("Signature incompleted");
+			throw new Exception("Signature incompleted");
 		}
 		return Helper.toHexString(tx.toArray());
 	}
@@ -783,20 +784,15 @@ public class UserWalletManager {
 	public void getBalance() {
 		
 	}
-	public UTXOInfo getUTXOs() {
+	public void getUTXOs() {
 		
-		return null;
 	}
 	public void getUTXO() {
 		
 	}
 	
-	public String getStateUpdate(String namespace, String key) {
-		try {
-			return restNode.getStateUpdate(namespace, key);
-		} catch (RestException e) {
-			throw new RuntimeException(e);
-		}
+	public String getStateUpdate(String namespace, String key) throws RestException {
+		return restNode.getStateUpdate(namespace, key);
 	}
 	
 	
