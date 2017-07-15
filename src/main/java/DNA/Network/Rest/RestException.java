@@ -6,4 +6,10 @@ public class RestException extends Exception {
 	public RestException(String message) {
 		super(message);
 	}
+	public RestException(String message, Throwable t) {
+		super(message,t);
+	}
+	public RestException(Throwable t) {
+		super(t);
+	}
 }
