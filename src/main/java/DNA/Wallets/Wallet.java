@@ -66,9 +66,9 @@ public abstract class Wallet implements AutoCloseable {
             this.contracts = new HashMap<UInt160, Contract>();
             this.coins = new TrackableCollection<TransactionInput, Coin>();
             try {
-				this.current_height = Blockchain.current() != null ? Blockchain.current().headerHeight() + 1 : 0;
+				this.current_height = Blockchain.current() != null ? Blockchain.current().headerHeight() + 1 : 1;
 			} catch (Exception ex) {
-            	this.current_height = 0;
+            	this.current_height = 1;
 			}
             buildDatabase();
             saveStoredData("PasswordHash", Digest.sha256(passwordKey));
