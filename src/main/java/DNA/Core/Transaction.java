@@ -14,7 +14,7 @@ import DNA.Network.*;
 /**
  *  交易
  */
-public abstract class Transaction extends Inventory implements JsonSerializable {
+public abstract class Transaction extends Inventory {
 	/**
 	 * 交易类型
 	 */
@@ -211,89 +211,6 @@ public abstract class Transaction extends Inventory implements JsonSerializable 
 		return json;
 	}
 	
-	/**
-	 * json格式数据反序列化
-	 */
-	@Override
- 	public void fromJson(JsonReader reader) {
-		JObject json = reader.json();
-		if(type.value() != (byte)json.get("TxType").asNumber()) {
-			throw new RuntimeException();
-		}
-		version = (byte)json.get("PayloadVersion").asNumber();
-//		nonce = (long)json.get("Nonce").asNumber();
-		
-		JArray array = (JArray) json.get("Attributes");
-		int count = -1;
-		if(array == null || array.size() == 0) {
-			attributes = new TransactionAttribute[0];
-		} else {
-			count = array.size();
-			try {
-				attributes = reader.readSerializableArray(TransactionAttribute.class, count, "Attributes");
-			} catch (InstantiationException | IllegalAccessException | IOException e) {
-				throw new RuntimeException("Failed to fromJson at attributes");
-			}
-		}
-		array = (JArray) json.get("UTXOInputs");
-		if(array == null || array.size() == 0) {
-			inputs = new TransactionInput[0];
-		} else {
-			count = array.size();
-			try {
-				inputs = reader.readSerializableArray(TransactionInput.class, count, "UTXOInputs");
-			} catch (InstantiationException | IllegalAccessException | IOException e) {
-				throw new RuntimeException("Failed to fromJson at inputs");
-			}
-		}
-		array = (JArray) json.get("Outputs");
-		if(array == null || array.size() == 0) {
-			outputs = new TransactionOutput[0];
-		} else {
-			count = array.size();
-			try {
-				outputs = reader.readSerializableArray(TransactionOutput.class, count, "Outputs");
-			} catch (InstantiationException | IllegalAccessException | IOException e) {
-				throw new RuntimeException("Failed to fromJson at outputs");
-			}
-		}
-		array = (JArray) json.get("Programs");
-		if(array == null || array.size() == 0) {
-			scripts = new Program[0];
-		} else {
-			count = array.size();
-			try {
-				scripts = reader.readSerializableArray(Program.class, count, "Programs");
-			} catch (InstantiationException | IllegalAccessException | IOException e) {
-				throw new RuntimeException("Failed to fromJson at scripts");
-			}
-		}
-		fromJsonExclusiveData(new JsonReader(json.get("Payload")));
-		
-	}
-	protected void fromJsonExclusiveData(JsonReader reader) {
-	}
-	
-	public static Transaction fromJsonD(JsonReader reader) throws IOException {
-        try {
-            TransactionType type = TransactionType.valueOf((byte)reader.json().get("TxType").asNumber());
-            String typeName = "DNA.Core." + type.toString();
-            Transaction transaction = (Transaction)Class.forName(typeName).newInstance();
-            transaction.fromJson(reader);;
-			return transaction;
-		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException ex) {
-			ex.printStackTrace();
-			throw new IOException(ex);
-		}
-	}
-	
-	@Override
-	public void toJson(JsonWriter writer) {
-		// ...
-	}
-	protected void toJsonExclusiveData(JsonWriter writer) {
-		// ...
-	}
 	
 	protected void onDeserialized() throws IOException {
 	}

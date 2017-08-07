@@ -23,6 +23,13 @@ public class ECC {
 		return a.getYCoord().toBigInteger().compareTo(b.getYCoord().toBigInteger());
 	}
 	
+	public static byte[] generateKey(int len) {
+		byte[] key = new byte[len];
+		SecureRandom sr = new SecureRandom();
+		sr.nextBytes(key);
+		return key;
+	}
+	
 	public static byte[] generateKey() {
 		byte[] key = new byte[32];
 		SecureRandom sr = new SecureRandom();

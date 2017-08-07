@@ -6,9 +6,6 @@ import java.util.Arrays;
 import DNA.Helper;
 import DNA.IO.BinaryReader;
 import DNA.IO.BinaryWriter;
-import DNA.IO.JsonReader;
-import DNA.IO.JsonSerializable;
-import DNA.IO.JsonWriter;
 import DNA.IO.Serializable;
 import DNA.IO.Json.JObject;
 import DNA.IO.Json.JString;
@@ -16,7 +13,7 @@ import DNA.IO.Json.JString;
 /**
  *  交易属性
  */
-public class TransactionAttribute implements Serializable,JsonSerializable {
+public class TransactionAttribute implements Serializable {
 	/**
 	 * 用途
 	 */
@@ -70,20 +67,5 @@ public class TransactionAttribute implements Serializable,JsonSerializable {
 	public String toString() {
 		return "TransactionAttribute [usage=" + usage + ", data="
 				+ Arrays.toString(data) + "]";
-	}
-
-	/**
-	 * json格式数据反序列化
-	 */
-	@Override
-	public void fromJson(JsonReader reader) {
-		JObject json = reader.json();
-		usage = TransactionAttributeUsage.valueOf((byte)json.get("Usage").asNumber());
-		data = Helper.hexToBytes(json.get("Data").asString());
-	}
-	
-	@Override
-	public void toJson(JsonWriter writer) {
-		// ...
 	}
 }

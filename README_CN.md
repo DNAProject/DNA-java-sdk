@@ -34,9 +34,20 @@ DNA默认关闭认证选项，使用SDK可以直接访问DNA。在联盟链或�
 
 
 
-## 3 接口说明
+## 3 接口说明##
 
 调用每一个接口方法之前必须实例化账户管理器，后续的接口都是基于账户管理来调用的。实例化账户管理器所需参数包括：连接地址url，账户存储位置路径path，访问令牌accessToken。
+
+```
+String dnaUrl = "http://127.0.0.1:20334";
+String dnaToken = "";
+String path = "./dat/3.db3";
+AccountManager wm = AccountManager.getWallet(path, dnaUrl, dnaToken);
+```
+
+
+
+
 
 ### 3.1 创建账户
 
@@ -51,7 +62,24 @@ eg:
 
 List<String>  list = wm.createAccount(numCount);
 
-### 3.2 注册资产
+
+
+### 3.2 导入私钥
+
+根据导入可视化私钥(字节数组转换成十六进制的字符串)方式来创建账户
+
+| 参数   | 字段         | 类型     | 描述   | 说明                       |
+| ---- | ---------- | ------ | ---- | ------------------------ |
+| 输入参数 | privateKey | String | 私钥信息 | 32位字节数组转成十六进制的64位字符串类型数据 |
+| 输出参数 | address    | String | 账户地址 | 合约地址是以A开头的34位字符串         |
+
+eg:
+
+String address = wm.createAccountsFromPrivateKey(String privateKey);
+
+
+
+### 3.3 注册资产
 
 通过传递资产的基本信息来产生一笔区块链上合法的资产，返回资产编号。后续的资产类操作就可以使用该资产编号。
 
@@ -62,16 +90,15 @@ List<String>  list = wm.createAccount(numCount);
 |      | amount     | long   | 资产数量          | long类型占8字节     |
 |      | desc       | String | 描述            | 长度可任意          |
 |      | controller | String | 控制者地址         | 地址是以A开头的34位字符串 |
-|      | precision  | int    | 精度            | int类型占4字节      |
 | 输出参数 | txid       | String | 交易编号，这里代表资产编号 | 交易编号是64位字符串    |
 
 eg：
 
-String assetid = wm.reg(issuer, name, amount , desc, controller, precision);
+String assetid = wm.reg(issuer, name, amount , desc, controller);
 
 
 
-### 3.3 分发资产
+### 3.4 分发资产
 
 通过传递分发资产的基本信息来完成一笔资产的分发操作，返回交易编号。
 
@@ -90,7 +117,7 @@ String txid = wm.iss(controller, assetid, amount , recver , desc );
 
 
 
-### 3.4 转移资产
+### 3.5 转移资产
 
 通过传递分发资产的基本信息来完成一笔资产的分发操作，返回交易编号。
 
@@ -109,7 +136,7 @@ String txid = wm.trf(controller, assetid, amount , recver , desc );
 
 
 
-### 3.5 存证
+### 3.6 存证
 
 通过传递存证交易的基本信息来完成一笔资产的分发操作，返回交易编号。
 
@@ -125,7 +152,7 @@ String txid = wm.storeCert(content, desc);
 
 
 
-### 3.6 取证
+### 3.7 取证
 
 查询类操作，传递存证时的交易编号，输出具体存证内容
 
@@ -140,7 +167,7 @@ String content= wm.queryCert(txid);
 
 
 
-### 3.7 账户信息
+### 3.8 账户信息
 
 查询类操作，传递账户地址，输出账户具体信息
 
@@ -163,7 +190,7 @@ AccountInfo info = wm.getAccountInfo(address);
 
 
 
-### 3.8 账户资产
+### 3.9 账户资产
 
 查询类操作。传递账户地址，输出账户资产详情
 
@@ -186,7 +213,7 @@ AccountAsset info = wm.getAccountAsset(userAddr);
 
 
 
-### 3.9 资产信息
+### 3.10 资产信息
 
 查询类操作。传递资产编号，输出资产详情。
 
@@ -208,7 +235,7 @@ AssetInfo info = wm.getAssetInfo(assetid);
 
 
 
-### 3.10 交易信息
+### 3.11 交易信息
 
 查询类操作。传递交易编号，返回交易具体信息。
 
@@ -237,64 +264,9 @@ TransactionInfo info = wm.getTransactionInfo(txid);
 
 
 
-### 3.11 解析块
+### 3.12 所有账户
 
-| 参数   | 字段    | 类型     | 描述        | 说明                           |
-| ---- | ----- | ------ | --------- | ---------------------------- |
-| 输入参数 | dat   | String | json格式块信息 | 该数据是用户通过websocket获取到的Block数据 |
-| 输出参数 | block | Block  | 区块信息      | 该类型定义区块的基本信息，包括高度/哈希值/交易等    |
-
-| 自定义类型                | 子字段          | 子类型                       | 描述          | 说明        |
-| -------------------- | ------------ | ------------------------- | ----------- | --------- |
-| Block                | version      | int                       | 版本信息        | 目前为0      |
-|                      | prevBlock    | UInt256                   | 前一个区块散列值    | 32位byte数组 |
-|                      | merkleRoot   | UInt256                   | 区块所有交易默克尔树根 | 32位byte数组 |
-|                      | timestamp    | int                       | 时间戳         | 4字节int类型  |
-|                      | height       | int                       | 区块高度        | 4字节int类型  |
-|                      | nonce        | long                      | 随机数         | 8字节long类型 |
-|                      | nextMiner    | UInt160                   | 下一个记账合约地址   | 20位byte数组 |
-|                      | script       | Script                    | 验证脚本        | 签名验证脚本    |
-|                      | transactions | Transaction[]             | 交易列表        | 区块交易列表    |
-| Script               | stackScript  | byte[]                    | 签名信息        | 签名信息      |
-|                      | redeemScript | byte[]                    | 公钥信息        | 公钥信息      |
-| Transaction          | type         | TransactionType           | 交易类型        | byte单字节   |
-|                      | nonce        | long                      | 随机数         | 8字节long类型 |
-|                      | attributes   | TransactionAttribute      | 交易特性        | 自定义类型     |
-|                      | inputs       | TransactionInput          | 交易输入        | 自定义类型     |
-|                      | outputs      | TransactionOutput         | 交易输出        | 自定义类型     |
-|                      | script       | Script                    | 验证脚本        | 签名验证脚本    |
-| TransactionAttribute | usage        | TransactionAttributeUsage | 用途          | byte单字节   |
-|                      | data         | byte[]                    | 描述          | byte[]数组  |
-| TransactionInput     | prevHash     | UInt256                   | 引用交易散列值     | 32位byte数组 |
-|                      | prevIndex    | short                     | 引用交易输出索引    | 2字节类型     |
-| TransactionOutput    | assetId      | UInt256                   | 资产编号        | 32位byte数组 |
-|                      | value        | Fixed8                    | 数量          | long类型封装  |
-|                      | scriptHash   | UInt160                   | 收款地址        | 20位byte数组 |
-
-eg:
-
-Block block = UserWalletManager.fromWebSocketData(dat);
-
-
-
-### 3.12 导入私钥
-
-根据导入可视化私钥(字节数组转换成十六进制的字符串)方式来创建账户
-
-| 参数   | 字段         | 类型     | 描述   | 说明                      |
-| ---- | ---------- | ------ | ---- | ----------------------- |
-| 输入参数 | privateKey | String | 私钥信息 | 32位字节数组转成十六进制64位字符串类型数据 |
-| 输出参数 | address    | String | 账户地址 | 合约地址是以A开头的34位字符串        |
-
-eg:
-
-String address = wm.createAccountsFromPrivateKey(String privateKey);
-
-
-
-### 3.13 查看所有地址
-
-通过账户管理器实例可查询该管理器下所有用户地址信息。
+通过账户管理器实例可以查询当前管理器中所有账户地址。
 
 | 参数   | 字段   | 类型           | 描述     | 说明     |
 | ---- | ---- | ------------ | ------ | ------ |
@@ -303,93 +275,75 @@ String address = wm.createAccountsFromPrivateKey(String privateKey);
 
 eg:
 
-List<String>  list = wm.listAccountAddress();
-
-
-
-### 3.14 账本状态存储
-
-特定用户可通过构造状态更新交易存储信息至区块链账本。
-
-| 参数   | 字段         | 类型     | 描述         | 说明             |
-| ---- | ---------- | ------ | ---------- | -------------- |
-| 输入参数 | namespace  | String | 命名空间       | 暂无长度限制         |
-|      | key        | String | 存储数据key值   | 暂无长度限制         |
-|      | value      | String | 存储数据value值 | 暂无长度限制         |
-|      | controller | String | 特殊用户地址     | 地址是以A开头的34位字符串 |
-| 输出参数 | txid       | String | 交易编号       | 交易编号是64位字符串    |
-
-
-
-### 3.15 账本状态查询
-
-通过指定命名空间和存储数据key值可查询对应的value数据。
-
-| 参数   | 字段        | 类型     | 描述         | 说明     |
-| ---- | --------- | ------ | ---------- | ------ |
-| 输入参数 | namespace | String | 命名空间       | 暂无长度限制 |
-|      | key       | String | 存储数据key值   | 暂无长度限制 |
-| 输出参数 | value     | String | 存储数据value值 | 暂无长度限制 |
-
-
+List<String> list = wm.listAccount();
 
 
 
 ## 4 调用示例
 
+```
+//实例化账户管理器
+String dnaUrl = "http://127.0.0.1:20334";	  // DNA节点地址
+String dnaToken = "";						// 访问令牌，非必需项，如开启OAuth认证，则需要填写	
+String path = "./dat/3.db3";				 // 钱包路径
+AccountManager wm = AccountManager.getWallet(path, dnaUrl, dnaToken);
+```
+
+
+
+
+
 ### 4.1 创建账户
 
 ```
-// 打开账户管理器
-String path = "./dat/tsGo_01.db3";
-String url = "http://localhost:20334";
-String accessToken = "";				// 非必需项，如开启OAuth认证，则需要填写
-UserWalletManager wm = UserWalletManager.getWallet(path, url, accessToken);
+// 打开账户管理器(参考实例化账户管理器)
+AccountManager wm = getAccountManager(); 
+
 // 创建账户
 String user01 = wm.createAccount();			// 创建单个账户
 List<String> list = wm.createAccount(10); 	// 批量创建10个账户
-System.out.println("user:"+user01);
-System.out.println("list:"+list);
 ```
 
-### 4.2 注册资产
+
+
+### 4.2 导入私钥
 
 ```
-// 打开账户管理器
-String path = "./dat/tsGo_01.db3";
-String url = "http://localhost:20334";
-String accessToken = "";				// 非必需项，如开启OAuth认证，则需要填写
-UserWalletManager wm = UserWalletManager.getWallet(path, url, accessToken);
-// 方式1：注册资产
+// 打开账户管理器(参考实例化账户管理器)
+AccountManager wm = getAccountManager(); 
+
+// 创建账户
+String privatekey = "";
+String address = wm.loadPrivateKey(privatekey);
+```
+
+
+
+### 4.3 注册资产
+
+```
+// 打开账户管理器(参考实例化账户管理器)
+AccountManager wm = getAccountManager(); 
+
+// 注册资产
 String issuer= "";		// 资产发行者地址
 String name = "";			// 资产名称
 long amount = 10000;		// 资产数量
 String desc = "";			// 描述
 String controller = "";		// 资产控制者地址
-int precision = 0;			// 精度
-String assetid = wm.reg(issuer, name, amount , desc, controller, precision);
+String assetid = wm.reg(issuer, name, amount , desc, controller);
 System.out.println("rs:"+assetid);
-
-// 方式2: 分步骤注册资产
-// S1:构造交易
-Transaction tx = wm.createRegTx(issuer, name, amount , desc, controller, precision);
-// S2:交易签名
-String txHex = wm.signTx(tx);
-// S3:发送交易
-boolean rr = wm.sendTx(txHex);
-//
-System.out.println("rs1:"+rr+",txid:"+tx.hash().toString());
 ```
 
-### 4.3 发行资产
+
+
+### 4.4 发行资产
 
 ```
-// 打开账户管理器
-String path = "./dat/tsGo_01.db3";
-String url = "http://localhost:20334";
-String accessToken = "";				// 非必需项，如开启OAuth认证，则需要填写
-UserWalletManager wm = UserWalletManager.getWallet(path, url, accessToken);
-// 方式1：分发资产
+// 打开账户管理器(参考实例化账户管理器)
+AccountManager wm = getAccountManager(); 
+
+// 分发资产
 String controller= "";		// 资产控制者地址
 String assetid = "";		// 资产编号(由注册资产产生)
 long amount = 100;			// 分发数量
@@ -397,27 +351,17 @@ String recver = "";			// 分发资产接收者地址
 String desc = "";			// 描述
 String txid = wm.iss(controller, assetid, amount , recver , desc );
 System.out.println("rs:"+txid);
-
-// 方式2: 分步骤分发资产
-// S1:构造交易
-Transaction tx = wm.createIssTx(controller, assetid, amount , recver , desc );
-// S2:交易签名
-String txHex = wm.signTx(tx);
-// S3:发送交易
-boolean rr = wm.sendTx(txHex);
-//
-System.out.println("rs2:"+rr+",txid:"+tx.hash().toString());
 ```
 
-### 4.4 转移资产
+
+
+### 4.5 转移资产
 
 ```
-// 打开账户管理器
-String path = "./dat/tsGo_01.db3";
-String url = "http://localhost:20334";
-String accessToken = "";				// 非必需项，如开启OAuth认证，则需要填写
-UserWalletManager wm = UserWalletManager.getWallet(path, url, accessToken);
-// 方式1：转移资产
+// 打开账户管理器(参考实例化账户管理器)
+AccountManager wm = getAccountManager(); 
+
+// 转移资产
 String controller= "";		// 资产控制者地址
 String assetid = "";		// 资产编号(由注册资产产生)
 long amount = 100;		// 转移数量
@@ -425,25 +369,16 @@ String recver = "";		// 转移资产接收者地址
 String desc = "";		// 描述
 String txid = wm.trf(controller, assetid, amount , recver , desc );
 System.out.println("rs:"+txid);
-
-// 方式2: 分步骤转移资产
-// S1:构造交易
-Transaction tx = wm.createTrfTx(controller, assetid, amount , recver , desc );
-// S2:交易签名
-String txHex = wm.signTx(tx);
-// S3:发送交易
-boolean rr = wm.sendTx(txHex);
-//
-System.out.println("rs2:"+rr+",txid:"+tx.hash().toString());
 ```
 
-### 4.5 存证
+
+
+### 4.6 存证
 
 ```
-// 打开账户管理器
-String url = "http://localhost:20334";
-String accessToken = "";				// 非必需项，如开启OAuth认证，则需要填写
-UserWalletManager wm = UserWalletManager.getWallet(url, accessToken);
+// 打开账户管理器(参考实例化账户管理器)
+AccountManager wm = getAccountManager(); 
+
 // 方式1：存证
 String content = "";		// 待存储的信息
 String desc = "";			// 描述
@@ -451,133 +386,82 @@ String txid = wm.storeCert(content, desc);
 System.out.println("rs:"+txid);
 ```
 
-### 4.6 取证
+
+
+### 4.7 取证
 
 ```
-// 打开账户管理器
-String url = "http://localhost:20334";
-String accessToken = "";				// 非必需项，如开启OAuth认证，则需要填写
-UserWalletManager wm = UserWalletManager.getWallet(url, accessToken);
+// 打开账户管理器(参考实例化账户管理器)
+AccountManager wm = getAccountManager(); 
+
 // 取证
 String txid = "";		// 存证编号
 String content= wm.queryCert(txid);
 System.out.println("rs:"+content);
 ```
 
-### 4.7 账户信息
+
+
+### 4.8 账户信息
 
 ```
-// 打开账户管理器
-String path = "./dat/tsGo_01.db3";
-UserWalletManager wm = UserWalletManager.getWallet(path);
+// 打开账户管理器(参考实例化账户管理器)
+AccountManager wm = getAccountManager(); 
+
 // 查询账户信息
 String userAddr = "";		// 账户地址
 AccountInfo info = wm.getAccountInfo(userAddr);
 ```
 
-### 4.8 账户资产
+
+
+### 4.9 账户资产
 
 ```
-// 打开账户管理器
-String path = "./dat/tsGo_01.db3";
-UserWalletManager wm = UserWalletManager.getWallet(path);
+// 打开账户管理器(参考实例化账户管理器)
+AccountManager wm = getAccountManager(); 
+
 // 查询账户资产
 String userAddr = "";		// 账户地址
 AccountAsset info = wm.getAccountAsset(userAddr);
 ```
 
-### 4.9 资产信息
+
+
+### 4.10 资产信息
 
 ```
-// 打开账户管理器
-String url = "http://localhost:20334";
-String accessToken = "";				// 非必需项，如开启OAuth认证，则需要填写
-UserWalletManager wm = UserWalletManager.getWallet(url, accessToken);
+// 打开账户管理器(参考实例化账户管理器)
+AccountManager wm = getAccountManager(); 
+
 // 查询账户资产
 String assetid = "";
 AssetInfo info = wm.getAssetInfo(assetid);
 ```
 
-### 4.10 交易信息
+
+
+### 4.11 交易信息
 
 ```
-// 打开账户管理器
-String url = "http://localhost:20334";
-String accessToken = "";				// 非必需项，如开启OAuth认证，则需要填写
-UserWalletManager wm = UserWalletManager.getWallet(url, accessToken);
+// 打开账户管理器(参考实例化账户管理器)
+AccountManager wm = getAccountManager(); 
+
 // 查询账户资产
 String txid = "";
 TransactionInfo info = wm.getTransactionInfo(txid);
 ```
 
-### 4.11 解析块
+
+
+### 4.12 所有账户
 
 ```
-// 解析json为block类型
-String dat = "";				// 该数据为用户通过websocket方式或者通过rest方式获取到块信息的json格式数据
-Block block = UserWalletManager.from(dat);	
-```
+// 打开账户管理器(参考实例化账户管理器)
+AccountManager wm = getAccountManager(); 
 
-
-
-### 4.12 导入私钥
-
-```
-// 打开账户管理器
-String path = "./dat/tsGo_01.db3";
-UserWalletManager wm = UserWalletManager.getWallet(path);
-// 根据私钥创建账户
-String prikey = "";
-String address = wm.createAccountsFromPrivateKey(prikey);
-```
-
-
-
-### 4.13 查看所有地址
-
-```
-// 打开账户管理器
-String path = "./dat/tsGo_01.db3";
-UserWalletManager wm = UserWalletManager.getWallet(path);
-// 查看地址
-List<String> address = wm.listAccountAddress();
-```
-
-
-
-### 4.14 账本状态存储
-
-```
-// 打开账户管理器
-String path = "./dat/tsGo_01.db3";
-String url = "http://localhost:20334";
-String accessToken = "";				// 非必需项，如开启OAuth认证，则需要填写
-UserWalletManager wm = UserWalletManager.getWallet(path, url, accessToken);
-
-// 存储账本状态
-String namespace = "";
-String key = "";
-String value = "";
-String controller = "";
-// S1:构造交易
-Transaction tx = wm.makeStateUpdateTransaction(namesapce, key, value, controller);
-// S2:交易签名
-String txHex = wm.signTx(tx);
-// S3:发送交易
-boolean rr = wm.sendTx(txHex);
-```
-
-
-
-### 4.15 账本状态查询
-
-```
-// 打开账户管理器
-String url = "http://localhost:20334";
-String accessToken = "";				// 非必需项，如开启OAuth认证，则需要填写
-UserWalletManager wm = UserWalletManager.getWallet(url, accessToken);
-// 查询账本状态
-String val = wm.getStateUpdate(namespace, key);
+// 查询管理器中所有账户
+List<String> list = wm.listAccount();
 ```
 
 
@@ -586,7 +470,9 @@ String val = wm.getStateUpdate(namespace, key);
 
 ## 5 开发说明
 
-​	该SDK供客户端使用，其中含有账户信息的管理，比如合约地址、公钥、私钥，这些信息保存至客户端数据库中。具体的数据库可根据需求自由选择，目前实现的数据库有sqlite、mysql，sqlite是一个文件数据库，初始化时需要传递路径，上面的示例是根据该sqlite保存账户信息的数据库实现给出的，mysql使用时还需要创建对应的表，以及实现具体的数据库连接。通过SDK接入DNA区块链时，可以直接使用当前的Sqlite数据库保存账户的公私钥信息的UserWalletManager，也可自己实现一个账户管理器来管理账户私密信息。自己实现账户管理器可参考DNA.Implementations.Wallets.SQLite.UserWallet类和DNA.Implementations.Wallets.Mysql.WebWallet类。
+​	该SDK供客户端使用，其中含有账户信息的管理，比如合约地址、公钥、私钥，这些信息保存至客户端数据库中。具体的数据库可根据需求自由选择，目前实现的数据库有sqlite、mysql，sqlite是一个文件数据库，初始化时需要传递路径，上面的示例是根据该sqlite保存账户信息的数据库实现给出的，mysql使用时还需要创建对应的表，以及实现具体的数据库连接。通过SDK接入DNA区块链时，可以直接使用当前Sqlite数据库保存账户的公私钥信息的UserWalletManager，也可自定义一个账户管理器来管理账户私密信息。自己实现账户管理器可参考DNA.Implementations.Wallets.SQLite.UserWallet 类。
+
+
 
 
 

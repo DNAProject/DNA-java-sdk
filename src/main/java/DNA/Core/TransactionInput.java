@@ -5,9 +5,6 @@ import java.io.IOException;
 import DNA.UInt256;
 import DNA.IO.BinaryReader;
 import DNA.IO.BinaryWriter;
-import DNA.IO.JsonReader;
-import DNA.IO.JsonSerializable;
-import DNA.IO.JsonWriter;
 import DNA.IO.Serializable;
 import DNA.IO.Json.JNumber;
 import DNA.IO.Json.JObject;
@@ -16,7 +13,7 @@ import DNA.IO.Json.JString;
 /**
  *  交易输入
  */
-public class TransactionInput implements Serializable,JsonSerializable {
+public class TransactionInput implements Serializable {
     /**
      *  引用交易的散列值
      */
@@ -76,20 +73,5 @@ public class TransactionInput implements Serializable,JsonSerializable {
 	public String toString() {
 		return "TransactionInput [prevHash=" + prevHash + ", prevIndex="
 				+ prevIndex + "]";
-	}
-	
-	/**
-	 * json格式数据反序列化
-	 */
-	@Override
-	public void fromJson(JsonReader reader) {
-		JObject json = reader.json();
-		prevHash = UInt256.parse(json.get("ReferTxID").asString());
-		prevIndex = (short)json.get("ReferTxOutputIndex").asNumber();
-	}
-	
-	@Override
-	public void toJson(JsonWriter writer) {
-		// ...
 	}
 }

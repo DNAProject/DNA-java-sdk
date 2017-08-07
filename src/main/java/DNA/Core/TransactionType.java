@@ -42,9 +42,19 @@ public enum TransactionType {
     RecordTransaction(0x81),
     
     /**
-     * 
+     * 账本状态资产
      */
     StateUpdateTransaction(0x90),
+    
+    /**
+     * 账本状态资产控制
+     */
+    StateUpdaterTransaction(0x91),
+    
+    /**
+     * 销毁资产
+     */
+    DestroyTransaction(0x18),
     
     ;
 

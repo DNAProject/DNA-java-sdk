@@ -1,7 +1,6 @@
 package DNA.Core;
 
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -15,7 +14,6 @@ import DNA.Core.Scripts.Program;
 import DNA.Cryptography.ECC;
 import DNA.IO.BinaryReader;
 import DNA.IO.BinaryWriter;
-import DNA.IO.JsonReader;
 import DNA.IO.Json.JNumber;
 import DNA.IO.Json.JObject;
 import DNA.IO.Json.JString;
@@ -89,32 +87,6 @@ public class RegisterTransaction extends Transaction {
 //        writer.writeVarBytes(issuer.getXCoord().toBigInteger().toByteArray());
 //        writer.writeVarBytes(issuer.getYCoord().toBigInteger().toByteArray());
         writer.writeSerializable(admin);
-	}
-	
-	/**
-	 * Json格式数据反序列化
-	 */
-	@Override
-	protected void fromJsonExclusiveData(JsonReader reader) {
-		JObject json = reader.json();
-		try {
-			name = json.get("Asset").get("Name").asString();
-			precision = (byte)json.get("Asset").get("Precision").asNumber();
-			recordType = RecordType.valueOf((byte)json.get("Asset").get("RecordType").asNumber());
-			assetType = AssetType.valueOf((byte)json.get("Asset").get("AssetType").asNumber());
-			amount = new Fixed8((long)json.get("Amount").asNumber());
-			issuer = ECC.secp256r1.getCurve().createPoint(
-	        		new BigInteger(toPlainString(json.get("Issuer").get("X").asString())), 
-	        		new BigInteger(toPlainString(json.get("Issuer").get("Y").asString())));
-			admin = new UInt160(Helper.hexToBytes(json.get("Controller").asString()));
-//			admin = UInt160.parse(json.get("Controller").asString());
-		} catch (Exception ex) {
-			throw new RuntimeException(ex);
-		}
-	}
-	
-	public String toPlainString(String num) {
-		return new BigDecimal(num).toPlainString();
 	}
 	
 	/**

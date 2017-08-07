@@ -34,8 +34,11 @@ import DNA.Cryptography.AES;
 import DNA.Cryptography.Base58;
 import DNA.Cryptography.Digest;
 import DNA.Cryptography.ECC;
+import DNA.IO.Serializable;
 import DNA.IO.Caching.TrackState;
 import DNA.IO.Caching.TrackableCollection;
+import DNA.Network.Rest.RestRuntimeException;
+import DNA.sdk.helper.DataFormat;
 
 public abstract class Wallet implements AutoCloseable {
 
@@ -52,10 +55,6 @@ public abstract class Wallet implements AutoCloseable {
     private boolean isrunning = false;
 
     protected final Object locker = new Object();
-    
-    protected int walletHeight() {
-        return current_height;
-    }
     
     private Wallet(String path, byte[] passwordKey, boolean create) throws BadPaddingException, IllegalBlockSizeException {
         this.path = path;
@@ -74,7 +73,7 @@ public abstract class Wallet implements AutoCloseable {
             saveStoredData("PasswordHash", Digest.sha256(passwordKey));
             saveStoredData("IV", iv);
             saveStoredData("MasterKey", AES.encrypt(masterKey, passwordKey, iv));
-            saveStoredData("Version", new byte[] { 0, 7, 0, 0 });
+            saveStoredData("Version", new byte[] { 0, 7, 0, 13 });
             saveStoredData("Height", ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN).putInt(current_height).array());
         } else {
             byte[] passwordHash = loadStoredData("PasswordHash");
@@ -87,9 +86,28 @@ public abstract class Wallet implements AutoCloseable {
             this.contracts = Arrays.stream(loadContracts()).collect(Collectors.toMap(p -> p.scriptHash(), p -> p));
             this.coins = new TrackableCollection<TransactionInput, Coin>(loadCoins());
             this.current_height = ByteBuffer.wrap(loadStoredData("Height")).order(ByteOrder.LITTLE_ENDIAN).getInt();
-       
+//            checkCoinState();
         }
         Arrays.fill(passwordKey, (byte) 0);
+    }
+    
+    public void checkCoinState() {
+    	Coin[] spending = findSpendingCoins();
+    	if(spending == null || spending.length == 0) {
+    		return;
+    	}
+    	Arrays.stream(spending).filter(p -> {
+    		Transaction tx = null;
+    		try {
+    			tx = Blockchain.current().getTransaction(p.input.prevHash);
+    		} catch (Exception e) {
+    			tx = null;
+    		}
+    		return tx == null;
+    	}).forEach(p -> coins.get(p.input).setState(CoinState.Unspent));
+    	Coin[] changeset = coins.getChangeSet(Coin[]::new);
+    	onSaveTransaction(null, new Coin[0], changeset);
+    	coins.commit();
     }
     
     /**
@@ -243,6 +261,16 @@ public abstract class Wallet implements AutoCloseable {
         }
     }
     
+    public Coin[] getCoin() {
+    	return coins.stream().toArray(Coin[]::new);
+    }
+    
+    public Coin[] findSpendingCoins() {
+    	synchronized (coins) {
+            return coins.stream().filter(p -> p.getState() == CoinState.Spending).toArray(Coin[]::new);
+        }
+    }
+    
     public Coin[] findUnconfirmedCoins() {
         synchronized (coins) {
             return coins.stream().filter(p -> p.getState() == CoinState.Unconfirmed).toArray(Coin[]::new);
@@ -272,7 +300,7 @@ public abstract class Wallet implements AutoCloseable {
     protected static Coin[] findUnspentCoins(Stream<Coin> unspents, UInt256 asset_id, Fixed8 amount) {
         Coin[] unspents_asset = unspents.filter(p -> p.assetId.equals(asset_id)).toArray(Coin[]::new);
         Fixed8 sum = Fixed8.sum(unspents_asset, p -> p.value);
-        if (sum.compareTo(amount) < 0) return null;
+        if (sum.compareTo(amount) < 0) throw new RuntimeException(DataFormat.getErrorDesc4NoBalance(String.format("insuficient balance, sum=%s, amount=%s", sum, amount)));
         if (sum.equals(amount)) return unspents_asset;
         Arrays.sort(unspents_asset, (a, b) -> -a.value.compareTo(b.value));
         int i = 0;
@@ -436,17 +464,22 @@ public abstract class Wallet implements AutoCloseable {
     
     public Map<DNA.Core.Transaction,Integer> LoadTransactions() { return null;}
     
-    public <T extends Transaction> T makeTransaction(T tx, Fixed8 fee) {
+    public <T extends Transaction> T makeTransaction(T tx, Fixed8 fee) throws CoinException {
     	return makeTransaction(tx, fee, null);
     }
 
-    public <T extends Transaction> T makeTransaction(T tx, Fixed8 fee, UInt160 from) {
-        if (tx.outputs == null) throw new IllegalArgumentException();
+    public <T extends Transaction> T makeTransaction(T tx, Fixed8 fee, UInt160 from) throws CoinException{
+        if (tx.outputs == null) throw new IllegalArgumentException("tx.output is null");
         if (tx.attributes == null) tx.attributes = new TransactionAttribute[0];
         fee = fee.add(tx.systemFee());
         Map<UInt256, Fixed8> pay_total = Arrays.stream(tx instanceof IssueTransaction ? new TransactionOutput[0] : tx.outputs).collect(Collectors.groupingBy(p -> p.assetId)).entrySet().stream().collect(Collectors.toMap(p -> p.getKey(), p -> Fixed8.sum(p.getValue().toArray(new TransactionOutput[0]), o -> o.value)));
-        Map<UInt256, Coin[]> pay_coins = pay_total.entrySet().stream().collect(Collectors.toMap(p -> p.getKey(), p -> findUnspentCoins(p.getKey(), p.getValue(), from)));
-        if (pay_coins.values().stream().anyMatch(p -> p == null)) return null;
+        Map<UInt256, Coin[]> pay_coins = null;
+        try {
+        	pay_coins = pay_total.entrySet().stream().collect(Collectors.toMap(p -> p.getKey(), p -> findUnspentCoins(p.getKey(), p.getValue(), from)));
+        } catch (CoinRuntimeException ex) {
+        	throw new CoinException(ex.getMessage(), ex);
+        }
+        if (pay_coins.values().stream().anyMatch(p -> p == null)) throw new CoinException(DataFormat.getErrorDesc4NoBalance("insuficient balance"));
         Map<UInt256, Fixed8> input_sum = pay_coins.entrySet().stream().collect(Collectors.toMap(p -> p.getKey(), p -> Fixed8.sum(p.getValue(), c -> c.value)));
         UInt160 change_address = from == null ? getChangeAddress() : from;
         List<TransactionOutput> outputs_new = new ArrayList<TransactionOutput>(Arrays.asList(tx.outputs));
@@ -517,14 +550,14 @@ public abstract class Wallet implements AutoCloseable {
                             key.prevHash = tx.hash();
                             key.prevIndex = (short)index;
                             if (coins.containsKey(key)) {
-                                coins.get(key).setState(CoinState.Unspent);
+                                coins.get(key).setState(CoinState.Unspent); // change Unconfimed to Unspent
                             } else {
                             	Coin coin = new Coin();
                             	coin.input = key;
                             	coin.assetId = output.assetId;
                             	coin.value = output.value;
                             	coin.scriptHash = output.scriptHash;
-                            	coin.setState(CoinState.Unspent);
+                            	coin.setState(CoinState.Unspent);	// add unspent coin
                                 coins.add(coin);
                             }  
                         }
@@ -534,7 +567,7 @@ public abstract class Wallet implements AutoCloseable {
                 for (Transaction tx : block.transactions) {
                     for (TransactionInput input : tx.getAllInputs().toArray(TransactionInput[]::new)) {
                         if (coins.containsKey(input)) {
-                        	coins.remove(input);
+                        	coins.get(input).setState(CoinState.Spent);	// change spending to spent
                         }
                     }
                 }
@@ -555,7 +588,7 @@ public abstract class Wallet implements AutoCloseable {
             synchronized (coins) {
                 coins.clear();
                 coins.commit();
-                current_height = 0;
+                current_height = 1;
             }
         }
     }
@@ -652,7 +685,23 @@ public abstract class Wallet implements AutoCloseable {
     	return path;
     }
     
-    public boolean hasFinishedSyncBlock() throws Exception {
-		return Blockchain.current().height() == walletHeight();
+    
+    public int getBlockHeight(){
+    	try {
+			return Blockchain.current().height();
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+    }
+	public int getWalletHeight() {
+		return current_height;
+	}
+	
+    static Block from(String ss) {
+    	try {
+			return Serializable.from(DNA.Helper.hexToBytes(ss), Block.class);
+		} catch (InstantiationException | IllegalAccessException e) {
+			throw new RestRuntimeException("Block.deserialize(height) failed", e);
+		}
     }
 }
