@@ -21,6 +21,15 @@ public class BinaryReader implements AutoCloseable {
 	public void close() throws IOException {
 		reader.close();
 	}
+	
+	public void mark(int readlimit) {
+		reader.mark(readlimit);
+	}
+	
+	public void reset() throws IOException {
+		reader.reset();
+	}
+	
 
 	public void read(byte[] buffer) throws IOException {
 		reader.readFully(buffer);

@@ -91,6 +91,13 @@ public class BinaryWriter implements AutoCloseable {
 		}
 	}
 	
+	public void writeSerializableArray2(Serializable[] v) throws IOException {
+		writeInt(v.length);
+		for (int i = 0; i < v.length; i++) {
+			v[i].serialize(this);
+		}
+	}
+	
 	public void writeShort(short v) throws IOException {
 		buffer.putShort(0, v);
 		writer.write(array, 0, 2);

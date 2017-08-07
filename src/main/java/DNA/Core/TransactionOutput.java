@@ -10,7 +10,7 @@ import DNA.Wallets.Wallet;
 /**
  *  交易输出
  */
-public class TransactionOutput implements Serializable,JsonSerializable {
+public class TransactionOutput implements Serializable {
     /**
      *  资产编号
      */
@@ -61,24 +61,4 @@ public class TransactionOutput implements Serializable,JsonSerializable {
 		return "TransactionOutput [assetId=" + assetId + ", value=" + value
 				+ ", scriptHash=" + scriptHash + "]";
 	}
-
-	/**
-	 * json格式数据反序列化
-	 */
-	@Override
-	public void fromJson(JsonReader reader) {
-		JObject json = reader.json();
-		assetId = new UInt256(Helper.hexToBytes(json.get("AssetID").asString()));
-		value = new Fixed8((long)json.get("Value").asNumber());
-		scriptHash = new UInt160(Helper.hexToBytes(json.get("ProgramHash").asString()));
-//		assetId = UInt256.parse(json.get("AssetID").asString());
-//		value = new Fixed8((long)json.get("Value").asNumber());
-//		scriptHash = UInt160.parse(json.get("ProgramHash").asString());
-	}
-	
-	@Override
-	public void toJson(JsonWriter writer) {
-		// ...
-	}
-	
 }

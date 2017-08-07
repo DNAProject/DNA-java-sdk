@@ -10,13 +10,20 @@ import DNA.Cryptography.ECC;
 import DNA.IO.BinaryReader;
 import DNA.IO.BinaryWriter;
 
-public class BookKeeper extends Transaction {
+/**
+ * 账本状态控制者交易
+ * 
+ * @author 12146
+ *
+ */
+public class StateUpdaterTransaction extends Transaction {
 	public ECPoint issuer;
 	public BookKeeperAction action;
 	public byte[] cert;
+	public String namespace;
 	
-	public BookKeeper() {
-		super(TransactionType.BookKeeper);
+	public StateUpdaterTransaction() {
+		super(TransactionType.StateUpdaterTransaction);
 	}
 	
 	@Override
@@ -25,6 +32,7 @@ public class BookKeeper extends Transaction {
         		new BigInteger(1,reader.readVarBytes()), new BigInteger(1,reader.readVarBytes()));
 		action = BookKeeperAction.valueOf(reader.readByte());
 		cert = reader.readVarBytes();
+		namespace = reader.readVarString();
 	}
 	
 	@Override
@@ -33,5 +41,6 @@ public class BookKeeper extends Transaction {
         writer.writeVarBytes(Helper.removePrevZero(issuer.getYCoord().toBigInteger().toByteArray()));
         writer.writeByte(action.value());
         writer.writeVarBytes(cert);
+        writer.writeVarString(namespace);
 	}
 }

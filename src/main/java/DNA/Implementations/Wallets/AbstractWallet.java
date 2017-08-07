@@ -63,12 +63,3 @@ public class AbstractWallet extends Wallet {
 	}
 
 }
-class A extends AbstractWallet implements IUserManager {
-
-	protected A(String path, String password, boolean create)
-			throws BadPaddingException, IllegalBlockSizeException {
-		super(path, password, create);
-		// TODO Auto-generated constructor stub
-	}
-
-}

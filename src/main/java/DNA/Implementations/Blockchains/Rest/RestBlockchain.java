@@ -35,6 +35,14 @@ public class RestBlockchain extends Blockchain {
 	public Block getBlock(int height) throws Exception {
 		return rest.getBlock(height);
 	}
+	
+	public int getBlockHeightFromDb() throws Exception {
+		return rest.getBlockHeightFromDb();
+	}
+	@Override
+	public Block getBlockFromDb(int height) throws Exception {
+		return rest.getBlockFromDb(height);
+	}
 	 
 	@Override
     public Block getBlock(UInt256 hash) throws Exception {

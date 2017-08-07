@@ -301,4 +301,10 @@ public abstract class Blockchain implements AutoCloseable {
         _default = blockchain;
         return blockchain;
     }
+    
+    public int getBlockHeightFromDb() throws Exception {return 0;}
+    public Block getBlockFromDb(int height) throws Exception {return null;}
+    
+    
+    
 }

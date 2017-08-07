@@ -66,7 +66,7 @@ public class OnChainSDKHelper {
 			int v = Byte.toUnsignedInt(b);
 			sb2.append(Integer.toHexString(v));
 		}
-		System.out.println(sb2);
+		print(sb2.toString());
 		
 		return sb2.toString();
 	}
@@ -115,57 +115,65 @@ public class OnChainSDKHelper {
 	
 	
 	private static void print(Transaction tx) {
-		System.out.println("\ttype:"+tx.type);
-		System.out.println("\tattrs:"+tx.attributes.length);
+		print("\ttype:"+tx.type);
+		if(tx.attributes != null) {
+		print("\tattrs:"+tx.attributes.length);
 		for(TransactionAttribute txAttr: tx.attributes) {
-			System.out.println("\t\tattr.usage:"+txAttr.usage);
-			System.out.println("\t\tattr.toStr:"+txAttr.toString()+"\n\t\t    newStr:"+new String(txAttr.data));
+			print("\t\tattr.usage:"+txAttr.usage);
+			print("\t\tattr.toStr:"+txAttr.toString()+"\n\t\t    newStr:"+new String(txAttr.data));
 		}
-		System.out.println("\tinputs:"+tx.inputs.length);
+		}
+		if(tx.inputs != null) {
+		print("\tinputs:"+tx.inputs.length);
 		for(TransactionInput in: tx.inputs) {
-			System.out.println("\t\tinput.prevHash:"+byte2str(in.prevHash.toArray()));
-			System.out.println("\t\tinput.prevHash:"+in.prevHash.toString());
-			System.out.println("\t\tinput.prevIndx:"+in.prevIndex);
+			print("\t\tinput.prevHash:"+byte2str(in.prevHash.toArray()));
+			print("\t\tinput.prevHash:"+in.prevHash.toString());
+			print("\t\tinput.prevIndx:"+in.prevIndex);
 		}
-		System.out.println("\toutputs:"+tx.outputs.length);
+		}
+		if(tx.outputs != null) {
+		print("\toutputs:"+tx.outputs.length);
 		for(TransactionOutput out: tx.outputs) {
-			System.out.println("\t\tout.assetId:"+out.assetId);
-			System.out.println("\t\tout.scriptHash:"+out.scriptHash);
-			System.out.println("\t\tout.value:"+out.value);
+			print("\t\tout.assetId:"+out.assetId);
+			print("\t\tout.scriptHash:"+out.scriptHash);
+			print("\t\tout.value:"+out.value);
 		}
-		System.out.println("\tscripts:"+tx.scripts.length);
+		}
+		if(tx.scripts != null) {
+		print("\tscripts:"+tx.scripts.length);
 		for(Program sc: tx.scripts) {
-			System.out.println("\t\tsc:"+sc.toString()+"\n\t\tsc.parameter:"+toHexString(sc.parameter) + "\n\t\tsc.code :"+toHexString(sc.code));
-			System.out.println("\t\tsc:"+sc.toString()+"\n\t\tsc.parameter.byte:"+byte2str(sc.parameter) + "\n\t\tsc.stack.code :"+byte2str(sc.code));
+			print("\n\t\tsc.parameter:"+toHexString(sc.parameter) + "\n\t\tsc.code :"+toHexString(sc.code));
+			print("\n\t\tsc.parameter.byte:"+byte2str(sc.parameter) + "\n\t\tsc.stack.code :"+byte2str(sc.code));
 		}
-		System.out.println("\ttx.hash():"+tx.hash());
-//		System.out.println("\ttx.sysF():"+tx.systemFee());
+		}
+		print("\ttx.hash():"+tx.hash());
 		if(tx instanceof RegisterTransaction) {
 			RegisterTransaction reg = (RegisterTransaction) tx;
-			System.out.println("\ttx.amount:"+reg.amount);
-			System.out.println("\ttx.type:"+reg.assetType);
-			System.out.println("\ttx.name:"+reg.name);
-			System.out.println("\ttx.nonce:"+reg.nonce);
-			System.out.println("\ttx.precision:"+reg.precision);
-			System.out.println("\ttx.pubkey(true):"+byte2str(reg.issuer.getEncoded(true)));
-			System.out.println("\ttx.pubkey(false):"+byte2str(reg.issuer.getEncoded(false)));
-			System.out.println("\ttx.admin:"+reg.admin);
-			System.out.println("\ttx.unsign:"+byte2str(reg.getHashData()));
-			System.out.println("\ttx.unsign:"+byte2str(reg.toArray()));
+			print("\ttx.amount:"+reg.amount);
+			print("\ttx.type:"+reg.assetType);
+			print("\ttx.name:"+reg.name);
+			print("\ttx.nonce:"+reg.nonce);
+			print("\ttx.precision:"+reg.precision);
+			print("\ttx.pubkey(true):"+byte2str(reg.issuer.getEncoded(true)));
+			print("\ttx.pubkey(false):"+byte2str(reg.issuer.getEncoded(false)));
+			print("\ttx.issuer:"+Contract.createSignatureContract(reg.issuer).address());
+			print("\ttx.admin:"+reg.admin);
+			print("\ttx.unsign:"+byte2str(reg.getHashData()));
+			print("\ttx.unsign:"+byte2str(reg.toArray()));
 		}
 		if(tx instanceof RecordTransaction) {
 			RecordTransaction rr = (RecordTransaction) tx;
-			System.out.println("rr.type:"+rr.recordType.toString());
-			System.out.println("rr.data:"+new String(rr.recordData));
+			print("rr.type:"+rr.recordType.toString());
+			print("rr.data:"+new String(rr.recordData));
 		}
-		System.out.println();
+		print();
 	
 	}
 	private static void print2(Block blk) {
 		String dat = String.format("Height:%6s, txs.len:%6s, blockTime:%s", new Object[] {
 				blk.height, blk.transactions.length, new Date(blk.timestamp * 1000L)
 		});
-		System.out.println(dat);
+		print(dat);
 	}
 
 	public static String toString(Block bb, int cc) {
@@ -181,7 +189,7 @@ public class OnChainSDKHelper {
 		sb.append("\n").append("script:\n\t"+toHexString(bb.script.parameter) + "\n\t"+toHexString(bb.script.code));
 		sb.append("\n").append("transactions:..."+bb.transactions.length);
 		if(bb.transactions.length > 0) {
-			Arrays.stream(bb.transactions).forEach(p -> System.out.println(p));
+			Arrays.stream(bb.transactions).forEach(p -> print(p));
 			Arrays.stream(bb.transactions).forEach(p -> {
 				sb.append("\n\t").append("type:"+ p.type.toString());
 				sb.append("\n\t").append("version:"+p.version);
@@ -220,18 +228,18 @@ public class OnChainSDKHelper {
 		return sb.toString();
 	}
 	private static void print(Block blk) {
-		System.out.println("Height:"+blk.height);
-		System.out.println("nonce :"+blk.nonce);
-		System.out.println("versio:"+blk.version);
-		System.out.println("hash  :"+blk.hash());
-		System.out.println("nextM :"+blk.nextMiner);
-		System.out.println("prevB :"+blk.prevBlock);
-		System.out.println("prevB :"+blk.timestamp);
-		System.out.println("prevB :"+System.currentTimeMillis());
-		System.out.println("bkTm  :"+new Date(blk.timestamp * 1000L));
-		System.out.println("sc.toS:\n\t"+toHexString(blk.script.parameter) + "\n\t"+toHexString(blk.script.code));
-		System.out.println("bk.mer:"+blk.merkleRoot);
-		System.out.println("blk.tx.len:"+blk.transactions.length);
+		print("Height:"+blk.height);
+		print("nonce :"+blk.nonce);
+		print("versio:"+blk.version);
+		print("hash  :"+blk.hash());
+		print("nextM :"+blk.nextMiner);
+		print("prevB :"+blk.prevBlock);
+		print("prevB :"+blk.timestamp);
+		print("prevB :"+System.currentTimeMillis());
+		print("bkTm  :"+new Date(blk.timestamp * 1000L));
+		print("sc.toS:\n\t"+toHexString(blk.script.parameter) + "\n\t"+toHexString(blk.script.code));
+		print("bk.mer:"+blk.merkleRoot);
+		print("blk.tx.len:"+blk.transactions.length);
 		for(Transaction tx: blk.transactions) {
 			print(tx);
 		}
@@ -241,54 +249,61 @@ public class OnChainSDKHelper {
 		print(userWallet);
 	}
 	private static void print(UserWallet userWallet) {
-		System.out.println("\nts.printWallet.......................................................................[st]");
-		System.out.println("path:"+userWallet.getWalletPath());
+		print("\nts.printWallet.......................................................................[st]");
+		print("path:"+userWallet.getWalletPath());
 		int c = 0;
 		
 		// 1
-		System.out.println("accs.......................start");c = 0;
+		print("accs.......................start");c = 0;
 		for(Account acc: userWallet.getAccounts()) {
-			System.out.println("acc......................."+(++c));
+			print("acc......................."+(++c));
 			print(acc);
 		}
-		System.out.println();
+		print();
 		// 2
-		System.out.println("contracts.......................start");c = 0;
+		print("contracts.......................start");c = 0;
 		for(Contract con: userWallet.getContracts()) {
-			System.out.println("contract......................."+(++c));
+			print("contract......................."+(++c));
 			print(con);
 		}
-		System.out.println();
+		print();
 		// 3
-		System.out.println("trans....................start");c = 0;
+		print("trans....................start");c = 0;
 		for(Transaction tx: userWallet.LoadTransactions().keySet()) {
-			System.out.println("tran...................."+(++c));
+			print("tran...................."+(++c));
 			print(tx);
 		}
-		System.out.println();
+		print();
 		// 4
 		long amount = 0L;
-		System.out.println("findCoins........................start"); c=0;
+		print("findCoins........................start"); c=0;
 		for(Coin coin: userWallet.findCoins()) {
-			System.out.println("coin............."+(++c));
+			print("coin............."+(++c));
 			print(coin);
 			amount += coin.value.toLong();
 		}
-		System.out.println("SpentAmount:"+amount);
-		System.out.println();
+		print("SpentAmount:"+amount);
+		print();
 		// 5
 		amount  = 0L;
-		System.out.println("findUnspentCoins.................start");c=0;
+		print("findUnspentCoins.................start");c=0;
 		for(Coin coin: userWallet.findUnspentCoins()) {
-			System.out.println("unspent........."+(++c));
+			print("unspent........."+(++c));
 			print(coin);
 			amount += coin.value.toLong();
-			System.out.println(coin.value + "----" + amount);
+			print(coin.value + "----" + amount);
 		}
-		System.out.println("UnspentAmount:"+amount);
-		System.out.println();
 		
-		System.out.println("\nts.printWallet.......................................................................[ed]");
+		// 5
+		amount  = 0L;
+		print("getCoin.................start");c=0;
+		for(Coin coin: userWallet.getCoin()) {
+			print("getCoin........."+(++c));
+			print(coin);
+		}
+		print();
+		
+		print("\nts.printWallet.......................................................................[ed]");
 	
 	}
 
@@ -303,62 +318,65 @@ public class OnChainSDKHelper {
 	
 	public static void print(Account acc) {
 		// addr
-		System.out.println("acc..................st");
-		System.out.println("acc.addr:"+Wallet.toAddress(Program.toScriptHash(Contract.createSignatureRedeemScript(acc.publicKey))));
-		System.out.println("acc.uint:"+Program.toScriptHash(Contract.createSignatureRedeemScript(acc.publicKey)).toString());
-		System.out.println("acc.uint(byte):"+getbyteStr(Program.toScriptHash(Contract.createSignatureRedeemScript(acc.publicKey)).toArray()));
-		System.out.println("acc.uint(hex):"+toHexString(Program.toScriptHash(Contract.createSignatureRedeemScript(acc.publicKey)).toArray()));
+		print("acc..................st");
+		print("acc.addr:"+Wallet.toAddress(Program.toScriptHash(Contract.createSignatureRedeemScript(acc.publicKey))));
+		print("acc.uint:"+Program.toScriptHash(Contract.createSignatureRedeemScript(acc.publicKey)).toString());
+		print("acc.uint(byte):"+getbyteStr(Program.toScriptHash(Contract.createSignatureRedeemScript(acc.publicKey)).toArray()));
+		print("acc.uint(hex):"+toHexString(Program.toScriptHash(Contract.createSignatureRedeemScript(acc.publicKey)).toArray()));
 		// pubKey
 		ECPoint pubKey = acc.publicKey;
 		String pubKeyStr = toHexString(acc.publicKey.getEncoded(true));
-		System.out.println(String.format("acc.PubKey:\n\tECPoint: %s\n\tPubKStr:%s", pubKey, pubKeyStr));
+		print(String.format("acc.PubKey:\n\tECPoint: %s\n\tPubKStr:%s", pubKey, pubKeyStr));
 		
 		// priKey
 		String priKey = toHexString(acc.privateKey);
-		System.out.println(String.format("acc.PriKey:\n\tHEX:%s", priKey));
+		print(String.format("acc.PriKey:\n\tHEX:%s", priKey));
 		
 		String wif = acc.export();
-		System.out.println(String.format("\tWIF:%s", wif));
+		print(String.format("\tWIF:%s", wif));
 		
 		// pubKeyHash
-		System.out.println("acc.PubKeyHash:"+acc.publicKeyHash.toString());
-		System.out.println("acc..................ed");
+		print("acc.PubKeyHash:"+acc.publicKeyHash.toString());
+		print("acc..................ed");
 	}
 
 	public static void print(Contract con) {
-		System.out.println("contract.address:"+con.address());
-		System.out.println("contract.publicKey:"+con.publicKeyHash.toString());
+		print("contract.address:"+con.address());
+		print("contract.publicKey:"+con.publicKeyHash.toString());
 	}
 
 	public static void print(Coin coin) {
-		System.out.println("coin.addr:"+coin.address());
-		System.out.println("coin.toSt:"+coin.toString());
-		System.out.println("coin.assetId:"+coin.assetId.toString());
-		System.out.println("coin.scriptHash:"+coin.scriptHash);
-		System.out.println("coin.value:"+coin.value.toString());
-		System.out.println("coin.state:"+coin.getState());
-		System.out.println("coin.TrackState:"+coin.getTrackState());
-		System.out.println("coin.input.prevHash:"+coin.input.prevHash);
+		print("coin.addr:"+coin.address());
+		print("coin.toSt:"+coin.toString());
+		print("coin.assetId:"+coin.assetId.toString());
+		print("coin.scriptHash:"+coin.scriptHash);
+		print("coin.value:"+coin.value.toString());
+		print("coin.state:"+coin.getState());
+		print("coin.TrackState:"+coin.getTrackState());
+		print("coin.input.prevHash:"+coin.input.prevHash);
 	}
 	
    public static void print(TrackableCollection<TransactionInput, Coin> coins, String key) {
-		System.out.println("Wallet.print.coins.......................[start]............."+key);
+		print("Wallet.print.coins.......................[start]............."+key);
 		coins.forEach(p -> {
-			System.out.println("1:"+p.assetId);
-			System.out.println("2:"+p.input.prevHash.toString());
-			System.out.println("3:"+p.scriptHash.toString());
-			System.out.println("4:"+p.value);
-			System.out.println("5:"+p.address());
-			System.out.println("6:"+p.getState());
-			System.out.println("7:"+p.getTrackState());
-			System.out.println("8:"+p.key().prevHash);
+			print("1:"+p.assetId);
+			print("2:"+p.input.prevHash.toString());
+			print("3:"+p.scriptHash.toString());
+			print("4:"+p.value);
+			print("5:"+p.address());
+			print("6:"+p.getState());
+			print("7:"+p.getTrackState());
+			print("8:"+p.key().prevHash);
 		});
-		System.out.println("Wallet.print.coins.......................[end]................"+key);
+		print("Wallet.print.coins.......................[end]................"+key);
 	}
    
    
    
    public static void print(String str) {
 	   System.out.println(str);
+   }
+   public static void print() {
+	   System.out.println();
    }
 }

@@ -8,6 +8,7 @@ import DNA.Core.SignatureContext;
 import DNA.Core.Transaction;
 import DNA.Wallets.Account;
 import DNA.Wallets.Coin;
+import DNA.Wallets.CoinException;
 import DNA.Wallets.Contract;
 
 public interface IUserManager {
@@ -28,9 +29,9 @@ public interface IUserManager {
 	
 	public void rebuild();
 
-	public <T extends Transaction> T makeTransaction(T regTx,Fixed8 zero);
+	public <T extends Transaction> T makeTransaction(T regTx,Fixed8 zero) throws CoinException;
 	
-	public <T extends Transaction> T makeTransaction(T tx, Fixed8 fee, UInt160 from);
+	public <T extends Transaction> T makeTransaction(T tx, Fixed8 fee, UInt160 from) throws CoinException;
 	
     public boolean saveTransaction(Transaction tx);
 
@@ -47,4 +48,10 @@ public interface IUserManager {
 	public Coin[] findUnconfirmedCoins();
 
 	public Map<Transaction, Integer> LoadTransactions();
+	
+	public Coin[] getCoin();
+	
+	public int getBlockHeight();
+	public int getWalletHeight();
+	
 }

@@ -219,6 +219,7 @@ public class UserWallet extends Wallet implements IUserManager {
     		entity.assetId = p.assetId.toArray();
     		entity.value = p.value.getData();
     		entity.scriptHash = p.scriptHash.toArray();
+//    		entity.state = CoinState.Unspent.ordinal();
     		entity.state = p.getState().ordinal();
     		return entity;
     	}).toArray(Coin[]::new));
@@ -259,7 +260,7 @@ public class UserWallet extends Wallet implements IUserManager {
             onCoinsChanged(ctx, added, changed, deleted);
             // 更新入库height
             if (tx_changed.size() > 0 || added.length > 0 || changed.length > 0 || deleted.length > 0) {
-            	saveStoredData(ctx, "Height", ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN).putInt(walletHeight()).array());
+            	saveStoredData(ctx, "Height", ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN).putInt(getWalletHeight()).array());
 	            ctx.commit();
             }
         }
@@ -271,13 +272,15 @@ public class UserWallet extends Wallet implements IUserManager {
         try (WalletDataContext ctx = new WalletDataContext(dbPath())) {
         	// 更新入库tx
         	ctx.beginTransaction();
-        	tx_changed = new Transaction();
-        	tx_changed.hash = tx.hash().toArray();
-        	tx_changed.type = tx.type.value();
-        	tx_changed.rawData = tx.toArray();
-        	tx_changed.height = -1;
-        	tx_changed.time = new Date(System.currentTimeMillis());
-    		ctx.insertOrUpdate(tx_changed);
+        	if(tx != null) {
+	        	tx_changed = new Transaction();
+	        	tx_changed.hash = tx.hash().toArray();
+	        	tx_changed.type = tx.type.value();
+	        	tx_changed.rawData = tx.toArray();
+	        	tx_changed.height = -1;
+	        	tx_changed.time = new Date(System.currentTimeMillis());
+	    		ctx.insertOrUpdate(tx_changed);
+        	}
     		// 更新入库coin
             onCoinsChanged(ctx, added, changed, new DNA.Wallets.Coin[0]);
             ctx.commit();
@@ -307,5 +310,12 @@ public class UserWallet extends Wallet implements IUserManager {
     
     public String getWalletPath() {
     	return dbPath();
+    }
+    
+    public boolean hasFinishedSyncBlock() throws Exception {
+    	int bHH = getBlockHeight();
+    	int cHH = getWalletHeight();
+    	System.out.println("blockHH:"+bHH + "---------------currentHH:"+cHH);
+    	return bHH+1 <= cHH;
     }
 }

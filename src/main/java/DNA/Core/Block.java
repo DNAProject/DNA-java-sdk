@@ -3,7 +3,6 @@ package DNA.Core;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.function.Function;
 
@@ -13,9 +12,6 @@ import DNA.Core.Scripts.Program;
 import DNA.Cryptography.MerkleTree;
 import DNA.IO.BinaryReader;
 import DNA.IO.BinaryWriter;
-import DNA.IO.JsonReader;
-import DNA.IO.JsonSerializable;
-import DNA.IO.JsonWriter;
 import DNA.IO.Serializable;
 import DNA.IO.Json.JArray;
 import DNA.IO.Json.JNumber;
@@ -23,12 +19,11 @@ import DNA.IO.Json.JObject;
 import DNA.IO.Json.JString;
 import DNA.Network.Inventory;
 import DNA.Network.InventoryType;
-import DNA.Wallets.Wallet;
 
 /**
  *  区块或区块头
  */
-public class Block extends Inventory implements JsonSerializable {
+public class Block extends Inventory {
     /**
      *  区块版本
      */
@@ -153,7 +148,7 @@ public class Block extends Inventory implements JsonSerializable {
         serializeUnsigned(writer);
         writer.writeByte((byte)1);
         writer.writeSerializable(script);
-        writer.writeSerializableArray(transactions);
+        writer.writeSerializableArray2(transactions);
     }
 
     @Override 
@@ -252,7 +247,7 @@ public class Block extends Inventory implements JsonSerializable {
         json.set("time", new JNumber(timestamp));
         json.set("height", new JNumber(Integer.toUnsignedLong(height)));
         json.set("nonce", new JNumber(nonce));
-        json.set("nextminer", new JString(Wallet.toAddress(nextMiner)));
+//        json.set("nextminer", new JString(Wallet.toAddress(nextMiner)));
         json.set("script", script.json());
         json.set("tx", new JArray(Arrays.stream(transactions).map(p -> p.json()).toArray(JObject[]::new)));
         return json;
@@ -278,61 +273,20 @@ public class Block extends Inventory implements JsonSerializable {
     }
 
     /**
-     *  验证该区块头是否合法
-     *  <returns>返回该区块头的合法性，返回true即为合法，否则，非法。</returns>
+     * 验证该区块头是否合法
+     * 
      */
     @Override public boolean verify() {
         return verify(false);
     }
 
     /**
-     *  验证该区块头是否合法
-     *  <param name="completely">是否同时验证区块中的每一笔交易</param>
-     *  <returns>返回该区块头的合法性，返回true即为合法，否则，非法。</returns>
+     * 验证该区块头是否合法
+     * 
+     * @param completely 是否同时验证区块中的每一笔交易
+     * @return
      */
     public boolean verify(boolean completely) {
     	return true;
     }
-
-    
-	@Override
-	public void toJson(JsonWriter writer) {
-		// ...
-	}
-
-	@Override
-	public void fromJson(JsonReader reader) {
-		JObject json = reader.json().get("BlockData");
-		// unsigned
-		this.version = (int)json.get("Version").asNumber();
-		this.prevBlock = UInt256.parse(json.get("PrevBlockHash").asString());
-		this.merkleRoot = UInt256.parse(json.get("TransactionsRoot").asString());
-		this.height = (int)json.get("Height").asNumber();
-		this.timestamp = new BigDecimal(json.get("Timestamp").asString()).intValue();
-		this.nextMiner = UInt160.parse(json.get("NextBookKeeper").asString());
-		this.nonce = new BigDecimal(json.get("ConsensusData").asString()).longValue();
-		// script
-		try {
-			this.script = new JsonReader(json.get("Program")).readSerializable(Program.class);
-		} catch (InstantiationException | IllegalAccessException | IOException e) {
-			throw new RuntimeException("");
-		}
-		// txs
-		JArray txsJson = (JArray) reader.json().get("Transactions");
-		if(txsJson == null) {
-			this.transactions = new Transaction[0];
-			return;
-		}
-		// 针对于数组的解析
-		int count = txsJson.size();
-		this.transactions = new Transaction[count];
-		for(int i=0; i<count; ++i) {
-			try {
-				this.transactions[i] = Transaction.fromJsonD(new JsonReader(txsJson.get(i)));
-			} catch (IOException e) {
-				e.printStackTrace();
-				throw new RuntimeException("Tx.deserialize failed");
-			}
-		}
-	}
 }
