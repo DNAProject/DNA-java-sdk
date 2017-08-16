@@ -248,7 +248,7 @@ public class TestMain4CLI {
 		// v1.1
 		String dnaUrl = "http://127.0.0.1:20334";
 		String dnaToken = "";
-		String path = "./dat/3.db3";
+		String path = "./4.db3";
 		AccountManager wm = AccountManager.getWallet(path, dnaUrl, dnaToken);
 		print(String.format("[param=%s,%s]", dnaUrl, path));
 		print(String.format("start to test....hh:%s", wm.getBlockHeight()));

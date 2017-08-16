@@ -19,10 +19,11 @@ public class GetBlockTransactionUtils {
 	 * @return		transaction list
 	 */
 	public static Block from(String ss) {
-		try {
-			return JsonSerializable.from(JObject.parse(ss), Block.class);
-		} catch (InstantiationException | IllegalAccessException e) {
-			throw new RuntimeException("Block Parsing exception");
-		}
+//		try {
+//			return JsonSerializable.from(JObject.parse(ss), Block.class);
+//		} catch (InstantiationException | IllegalAccessException e) {
+//			throw new RuntimeException("Block Parsing exception");
+//		}
+		return null;
 	}
 }

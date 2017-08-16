@@ -30,6 +30,10 @@ public class RegisterTransaction extends Transaction {
 	 */
 	public String name;				// 资产名称
 	/**
+	 * 资产描述
+	 */
+	public String description;		// 资产描述
+	/**
 	 * 精度
 	 */
 	public byte precision;			// 精度
@@ -62,6 +66,7 @@ public class RegisterTransaction extends Transaction {
 	protected void deserializeExclusiveData(BinaryReader reader) throws IOException {
 		try {
 			name = reader.readVarString();
+			description = reader.readVarString();
 			precision = reader.readByte();
 			assetType = AssetType.valueOf(reader.readByte());
 			recordType = RecordType.valueOf(reader.readByte());
@@ -78,6 +83,7 @@ public class RegisterTransaction extends Transaction {
 	@Override
 	protected void serializeExclusiveData(BinaryWriter writer) throws IOException {
         writer.writeVarString(name);
+        writer.writeVarString(description);
         writer.writeByte(precision);
         writer.writeByte(assetType.value());
         writer.writeByte(recordType.value());

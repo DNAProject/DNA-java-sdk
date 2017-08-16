@@ -546,6 +546,7 @@ public class AccountManager {
 		
 		tx.assetType = assetType ;	
 		tx.name = assetName;	
+		tx.description = txDesc;
 		tx.amount = Fixed8.parse(String.valueOf(assetAmount));	
 		tx.issuer = acc.publicKey;	
 		tx.admin = Wallet.toScriptHash(controller); 
