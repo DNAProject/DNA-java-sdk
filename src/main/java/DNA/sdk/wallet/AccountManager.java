@@ -803,10 +803,12 @@ public class AccountManager {
 	public static void print(String ss) {
 		System.out.println(now() + ss);
 	}
+
 	private byte[] toAttr(String txDesc) {
 		return (now() + " " + txDesc).getBytes();
 	}
+
 	public static String now() {
-		return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date()) + " ";
+		return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date());
 	}
 }
