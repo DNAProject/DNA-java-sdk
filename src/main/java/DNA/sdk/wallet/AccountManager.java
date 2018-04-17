@@ -50,6 +50,7 @@ import DNA.sdk.info.transaction.TxInputInfo;
 import DNA.sdk.info.transaction.TxOutputInfo;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 
 
 /**
@@ -497,6 +498,43 @@ public class AccountManager {
 			RecordTransaction rr = (RecordTransaction) tx;
 			return new String(rr.recordData);
 		}
+		return null;
+	}
+	
+
+	/**
+	 * 
+	 * 取证
+	 * 
+	 * <p>每次调用存证接口时会返回交易ID，使用该值可以查询存证内容。
+	 * 查询结果是JSON串：{"data": "This is test data.", "time": "2018-04-17 16:48:50.325"}
+	 * 查询不到时直接返回null
+	 * @param txid 交易ID
+	 * @return 查询结果 
+	 */
+	public String queryCertInfo(String txid) {
+		JSONObject json = JSONObject.parseObject("{'data': null, 'time': null}");
+		try {
+			Transaction tx = restNode.getRawTransaction(txid);
+			if(tx instanceof RecordTransaction) {
+				RecordTransaction rr = (RecordTransaction) tx;
+				
+				String data = new String(rr.recordData);
+				if(data != null && data.length() > 0) {
+					json.put("data", data);
+					
+					if(rr.attributes.length > 0 && rr.attributes[0] != null && rr.attributes[0].data != null) {
+						String attr = new String(rr.attributes[0].data);
+						json.put("time", attr.substring(0, 23));
+					}
+					return json.toJSONString();
+				}
+			}
+		} catch (RestException e) {
+			e.printStackTrace();
+			print(e.getMessage());
+		}
+		
 		return null;
 	}
 	
