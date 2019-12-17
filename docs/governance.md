@@ -1,8 +1,5 @@
 <h1 align="center"> 治理合约 </h1>
 
-<p align="center" class="version">Version 1.0.0 </p>
-
-
 
 ## 治理合约接口
 

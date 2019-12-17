@@ -1,7 +1,5 @@
 <h1 align="center"> Java sdk 智能合约 </h1>
 
-<p align="center" class="version">Version 1.0.0 </p>
-
 
 ## 介绍
 
@@ -9,12 +7,12 @@
 
 ## 智能合约部署、调用、事件推送
 
-> Note:目前java-sdk支持neo智能合约部署和调用，暂不支持WASM合约，NEO和WASM合约部署操作一样，调用略有不同，见下面详解：
+> Note:目前java-sdk支持neo和WASM智能合约部署和调用，NEO和WASM合约部署和调用方法不同，见下面详解：
 
 
 ### 部署
 
-通过[SmartX](https://smartx.ont.io/)编译智能合约，可以在SmartX上直接部署合约，也可以通过java sdk部署合约。
+通过[SmartX]()编译智能合约，可以在SmartX上直接部署合约，也可以通过java sdk部署合约。
 
 ```java
 InputStream is = new FileInputStream("/Users/sss/dev/test/IdContract/IdContract.avm");
@@ -34,7 +32,7 @@ Thread.sleep(6000);
 DeployCodeTransaction t = (DeployCodeTransaction) dnaSdk.getConnect().getTransaction(txHex);
 ```
 
-**makeDeployCodeTransaction**
+**DeployCode**
 
 ```java
 public DeployCode makeDeployCodeTransaction(String codeStr, boolean needStorage, String name, String codeVersion, String author, String email, String desp,String payer,long gaslimit,long gasprice) 
@@ -55,6 +53,16 @@ public DeployCode makeDeployCodeTransaction(String codeStr, boolean needStorage,
 |        | gaslimit   | long | gaslimit    | 必选 |
 |        | gasprice   | long | gas价格   | 必选 |
 | 输出参数 | tx   | Transaction  | 交易实例  |  |
+
+
+**DeployWasmCode**
+
+```java
+DeployWasmCode tx = dnaSdk.wasmvm().makeDeployCodeTransaction(code, "helloWorld", "1.0", "NashMiao",
+                "wdx7266@vip.qq.com", "wasm contract for java sdk test", payer.getAddressU160(),
+                500, 25000000);
+
+```
 
 ### 调用
 
@@ -109,7 +117,7 @@ public static String invokeContract(byte[] params, Account payerAcct, long gasli
 
 
 
-#### WASM智能合约调用-目前不支持WASM
+#### WASM智能合约调用
 
 * 基本流程：
   1. 构造调用合约中的方法需要的参数；
@@ -120,15 +128,18 @@ public static String invokeContract(byte[] params, Account payerAcct, long gasli
 * 示例：
 
 ```java
-//设置要调用的合约地址codeAddress
-dnaSdk.getSmartcodeTx().setCodeAddress(codeAddress);
-String funcName = "add";
-//构造合约函数需要的参数
-String params = dnaSdk.vm().buildWasmContractJsonParam(new Object[]{20,30});
-//指定虚拟机类型构造交易
-Transaction tx = dnaSdk.vm().makeInvokeCodeTransaction(dnaSdk.getSmartcodeTx().getCodeAddress(),funcName,params.getBytes(),VmType.WASMVM.value(),payer,gas);
-//发送交易
-dnaSdk.getConnect().sendRawTransaction(tx.toHexString());
+String contractHash = "bf8ee176c360f7a77b9c45b6faab213bc50eaf5d";
+List<Object> params = new ArrayList<>(Arrays.asList(1, 2));
+InvokeWasmCode tx = dnaSdk.wasmvm().makeInvokeCodeTransaction(contractHash, "add", params, payer.getAddressU160(), 500, 25000000);
+
+dnaSdk.signTx(tx, new Account[][]{{payer}});
+JSONObject result = (JSONObject) dnaSdk.getRestful().sendRawTransactionPreExec(tx.toHexString());
+
+params = new ArrayList<>(Arrays.asList(-2, 3));
+tx = dnaSdk.wasmvm().makeInvokeCodeTransaction(contractHash, "add", params, payer.getAddressU160(), 500, 25000000);
+
+dnaSdk.signTx(tx, new Account[][]{{payer}});
+result = (JSONObject) dnaSdk.getRestful().sendRawTransactionPreExec(tx.toHexString());
 ```
 
 #### 智能合约调用例子
@@ -196,16 +207,13 @@ System.out.println(dnaSdk.getConnect().getSmartCodeEvent(tx.hash().toHexString()
 
 
 ```java
-//lock 全局变量,同步锁
-public static Object lock = new Object();
 
-//获得ont实例
 String ip = "http://127.0.0.1";
 String wsUrl = ip + ":" + "20335";
 DnaSdk wm = DnaSdk.getInstance();
 wm.setWesocket(wsUrl, lock);
 wm.setDefaultConnect(wm.getWebSocket());
-wm.openWalletFile("OntAssetDemo.json");
+wm.openWalletFile("AssetDemo.json");
 
 ```
 
@@ -376,7 +384,7 @@ System.out.println("CodeAddress:" + Address.AddressFromVmCode(code).toHexString(
 ```java
 //step1：构造交易
 //需先将智能合约参数转换成vm可识别的opcode
-Transaction tx = dnaSdk.vm().makeInvokeCodeTransaction(ontContractAddr, null, contract.toArray(), VmType.Native.value(), sender.toBase58(),gaslimit，gasprice);
+Transaction tx = dnaSdk.vm().makeInvokeCodeTransaction(contractAddr, null, contract.toArray(), VmType.Native.value(), sender.toBase58(),gaslimit，gasprice);
 
 //step2：对交易签名
 dnaSdk.signTx(tx, info1.address, password);

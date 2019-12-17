@@ -97,12 +97,12 @@
 ```        
 
 ### 数字资产：
-1.原生数字资产
-2.Nep-5智能合约数字资产
+1. 原生数字资产
+2. OEP4智能合约数字资产
 
 * 原生数字资产：
 
-ont:
+gas:
 ```
 
       |                                         Main   Function                                                     |           Description            
@@ -118,26 +118,9 @@ ont:
     9 | long queryTotalSupply()                                                                     |  查询总供应量
       
 ```
-ong:
-```
+ 
 
-      |                                         Main   Function                                                     |           Description            
- -----|-------------------------------------------------------------------------------------------------------------|---------------------------------------------
-    1 | String sendTransfer(Account sendAcct, String recvAddr, long amount,Account payerAcct,long gaslimit,long gasprice)   |  转账
-    2 | long queryBalanceOf(String address)                                                       |  查询余额
-    3 | long queryAllowance(String fromAddr,String toAddr)                                         |  查询Allowance
-    4 | String sendApprove(Account sendAcct, String recvAddr, long amount,Account payerAcct,long gaslimit,long gasprice)    |  发送Approve
-    5 | String sendTransferFrom(Account sendAcct, String fromAddr, String toAddr,long amount,Account payerAcct,long gaslimit,long gasprice) |  发送TransferFrom
-    6 | String queryName()                                                                          |  查询资产名
-    7 | String querySymbol()                                                                        |  查询资产Symbol
-    8 | long queryDecimals()                                                                        |  查询精度
-    9 | long queryTotalSupply()                                                                     |  查询总供应量
-   10 | String claimOng(Account sendAcct, String toAddr, long amount, Account payerAcct, long gaslimit, long gasprice)             |  提取ong
-   11 | String unclaimOng(String address)                                                                           |  查询未提取的ong
-      
-```   
-
-* Nep-5智能合约数字资产:
+* OEP4智能合约数字资产:
 
 ```  
       |                                         Main   Function                                       |           Description            
@@ -156,9 +139,9 @@ ong:
 ```  
 
 ### 数字身份：
-1.数字身份包括注册、公钥、属性、恢复人等操作。
-2.claim接口包括颁发和验证
-3.claim存证接口
+1. 数字身份包括注册、公钥、属性、恢复人等操作。
+2. claim接口包括颁发和验证
+3. claim存证接口
 
 * dnaid功能接口：
 ```

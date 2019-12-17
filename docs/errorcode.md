@@ -1,7 +1,5 @@
 <h1 align="center"> 错误码 </h1>
 
-<p align="center" class="version">Version 1.0.0 </p>
-
 
 
 | 返回代码 | 描述信息 | 说明 |

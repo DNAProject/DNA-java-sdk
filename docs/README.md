@@ -1,25 +1,25 @@
 <h1 align="center"> DNA Java SDK 介绍 </h1>
 
-<p align="center" class="version">Version 1.0.0 </p>
+<p align="center" class="version">Version 2.0.0 </p>
 
 
 # 总体介绍
 
 该项目是本体官方Java SDK，它是一个综合性SDK，目前支持：本地钱包管理、数字身份管理、数字资产管理、智能合约部署和调用、与节点通信等。未来还将支持更丰富的功能和应用。
 
-## 主要功能
+## 主要内容
 
-- [介绍](sdk_get_start.md)
-- [接口基本信息](interface.md)
-- [区块链节点基本操作](basic.md)
-- [钱包文件及规范](Wallet_File_Specification_cn.md)
-- [数字身份及可信声明管理](identity_claim.md)
+- [快速开始](sdk_get_start.md)
+- [区块链节点接口](basic.md)
 - [数字资产](asset.md)
-- [数字存证](attest.md)
-- [权限管理](auth.md)
+- [数字身份](dnaid.md)
+- [可信声明](dnaid_claim.md)
 - [智能合约部署和调用](smartcontract.md)
+- [接口基本信息](interface.md)
+- [钱包文件及规范](Wallet_File_Specification_cn.md)
+- [权限管理](auth.md)
+- [API 文档](https://github.com/DNAProject/DNA/tree/master/docs/specifications)
 - [错误码](errorcode.md)
-- [API 文档](https://apidoc.ont.io/javasdk/)
 
 ## 代码结构说明：
 

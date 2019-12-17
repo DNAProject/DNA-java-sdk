@@ -1,15 +1,8 @@
 <h1 align="center"> Java sdk 使用说明 </h1>
 
-<p align="center" class="version">Version 1.0.0 </p>
-
-[English](../en/sdk_get_start.md) / 中文
-
-ONT中有两种资产：原生资产和合约资产。原生资产如ont和ong。交易所对接时，主要处理这两种类型资产的充值、提现等操作。
-
-sdk文档：[sdk文档](https://github.com/DNAProject/DNASDKJava/tree/master/docs/) 
 
 本文大纲如下：
-* [Java sdk 使用说明](#java-sdk-使用说明)
+* [快速开始](#快速开始)
 	* [1. 公私钥和地址](#1-公私钥和地址)
 		* [1.1 公私钥存储](#11-公私钥存储)
 			* [1.1.1 自己存储：](#111-自己存储)
@@ -41,13 +34,26 @@ sdk文档：[sdk文档](https://github.com/DNAProject/DNASDKJava/tree/master/doc
 		* [4.1 批量构造交易](#41-批量构造交易)
 		* [4.2 批量发送交易](#42-批量发送交易)
 		* [4.3 在钱包中创建Dnaid](#43-在钱包中创建Dnaid)
+		
+# 快速开始
+
+在公私钥对创建前，请先熟悉区块链接口，如果对数字身份和智能合约感兴趣，请参考对应说明。
+ 
+区块链接口请参考：
+    - [区块链节点接口](basic.md)。	
+数字身份请参考：
+    - [数字身份](dnaid.md)
+    - [可信声明](dnaid_claim.md)
+智能合约请参考：
+    - [智能合约部署和调用](smartcontract.md)
+    
 ## 1. 公私钥和地址
 
 账户是基于公私钥创建的，地址是公钥转换而来。
 
 ###  1.1 **公私钥存储**
 
-公私钥存储可以存储在数据库中，也可以根据钱包规范存储在文件中。
+公私钥存储可以根据情况存储在自己数据库中，也可以根据钱包规范存储在文件中。
 
 #### 1.1.1 自己存储：
 
@@ -124,7 +130,7 @@ Address recvAddr = Address.addressFromMultiPubKeys(2, acct1.serializePublicKey()
 
 | 方法名 | 参数 | 参数描述 |
 | :--- | :--- | :--- |
-| addressFromMultiPubkeys | int m,byte\[\]... pubkeys | 最小验签个数(<=公钥个数)，公钥 |
+| addressFromMultiPubkeys | int m,byte[]... pubkeys | 最小验签个数(<=公钥个数)，公钥 |
 
 ## 2. 原生资产转账
 
@@ -137,7 +143,7 @@ Address recvAddr = Address.addressFromMultiPubKeys(2, acct1.serializePublicKey()
 
 ```java
 
-String ip = "http://polaris1.ont.io";
+String ip = "http://127.0.0.1";
 String rpcUrl = ip + ":" + "20336";
 DnaSdk dnaSdk = DnaSdk.getInstance();
 dnaSdk.setRpc(rpcUrl);

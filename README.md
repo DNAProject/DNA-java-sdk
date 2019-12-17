@@ -28,6 +28,19 @@ Download URL：
 mvn clean install
 ```
 
+### How to Use
+
+Add maven dependency:
+
+```
+<!-- https://mvnrepository.com/artifact/com.github.DNAProject/DNASDKJava -->
+<dependency>
+    <groupId>com.github.DNAProject</groupId>
+    <artifactId>DNASDKJava/artifactId>
+    <version>2.0.0</version>
+</dependency>
+```
+
 ## Preparations
 
 * Make sure DNA Blockchain has deployed well,  RPC port has been opened, and SDK will connect the RPC server to initialize.

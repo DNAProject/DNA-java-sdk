@@ -1,8 +1,6 @@
 
 <h1 align="center"> 钱包规范 </h1>
 
-<p align="center" class="version">Version 1.0.0 </p>
-
 
 
 钱包规范描述了钱包数据结构及导出数字身份或资产账号二维码的数据结构。
@@ -16,7 +14,7 @@
   "name": "MyWallet",
   "version": "1.0",
   "scrypt": {},
-  "defaultDnaid": "did:ont:TJNxJe2Ty8eSCjCDxDPwiS78NRAn8XPTFL",
+  "defaultDnaid": "did:dna:TJNxJe2Ty8eSCjCDxDPwiS78NRAn8XPTFL",
   "defaultAccountAddress": "TJNxJe2Ty8eSCjCDxDPwiS78NRAn8XPTFL",
   "createTime": "2018-03-14T03:12:30.862Z",
   "identities": [],
@@ -60,7 +58,7 @@
 		"dkLen": 64
 	},
 	"identities": [{
-		"dnaid": "did:ont:ATcHA9eYKyve8M74CB4p6Ssx7kwXjmREUa",
+		"dnaid": "did:dna:ATcHA9eYKyve8M74CB4p6Ssx7kwXjmREUa",
 		"label": "mickey",
 		"lock": false,
 		"controls": [{
@@ -122,7 +120,7 @@ SCrypt算法参数，Scrypt数据结构:
 数字身份数据结构:
 ```json
 {
-  "dnaid": "did:ont:TQLASLtT6pWbThcSCYU1biVqhMnzhTgLFq",
+  "dnaid": "did:dna:TQLASLtT6pWbThcSCYU1biVqhMnzhTgLFq",
   "label": "MyIdentity",
   "lock": false,
   "isDefault" : false,

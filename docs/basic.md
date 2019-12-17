@@ -1,6 +1,4 @@
-<h1 align="center"> 区块链交互基本操作 </h1>
-
-<p align="center" class="version">Version 1.0.0 </p>
+<h1 align="center"> 区块链节点接口 </h1>
 
 
 
