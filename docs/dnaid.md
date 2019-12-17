@@ -101,7 +101,7 @@ dnaSdk.signTx(tx,identity.dnaid,password);
 dnaSdk.getConnect().sendRawTransaction(tx);
 ```
 
-链上注册成功后，对应此DNA ID的身份描述对象DDO将被存储在本体区块链上。
+链上注册成功后，对应此DNA ID的身份描述对象DDO将被存储在区块链上。
 
 关于DDO的信息可以从[DNA ID 身份标识协议](https://github.com/ontio/ontology-DID/blob/master/README_cn.md)
 
