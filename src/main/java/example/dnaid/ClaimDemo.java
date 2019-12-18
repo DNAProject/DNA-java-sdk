@@ -24,9 +24,7 @@ import com.github.DNAProject.account.Account;
 import com.github.DNAProject.common.Helper;
 import com.github.DNAProject.sdk.wallet.Identity;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 /**
@@ -38,25 +36,44 @@ public class ClaimDemo {
 
         try {
             DnaSdk dnaSdk = getDnaSdk();
-            String privatekey0 = "c19f16785b8f3543bbaf5e1dbb5d398dfa6c85aaad54fc9d71203ce83e505c07";
+            String privatekey0 = "523c5fcf74823831756f0bcb3634234f10b3beb1c05595058534577752ad2d9f";
             Account acct0 = new Account(Helper.hexToBytes(privatekey0), dnaSdk.defaultSignScheme);
+            System.out.println(dnaSdk.getConnect().getBalance(acct0.getAddressU160().toBase58()));
+            dnaSdk.getWalletMgr().getWallet().clearIdentity();
+            dnaSdk.getWalletMgr().writeWallet();
             List<Identity> dids = dnaSdk.getWalletMgr().getWallet().getIdentities();
             if (dids.size() < 2) {
                 Identity identity = dnaSdk.getWalletMgr().createIdentity("passwordtest");
-                dnaSdk.nativevm().dnaId().sendRegister(identity,"passwordtest",acct0,0,0);
+                dnaSdk.nativevm().dnaId().sendRegister(identity,"passwordtest",acct0,20000,500);
                 identity = dnaSdk.getWalletMgr().createIdentity("passwordtest");
-                dnaSdk.nativevm().dnaId().sendRegister(identity,"passwordtest",acct0,0,0);
+                dnaSdk.nativevm().dnaId().sendRegister(identity,"passwordtest",acct0,20000,500);
                 dids = dnaSdk.getWalletMgr().getWallet().getIdentities();
+                dnaSdk.getWalletMgr().writeWallet();
                 Thread.sleep(6000);
             }
 
-            Map<String, Object> map = new HashMap<String, Object>();
-            map.put("Issuer", dids.get(0).dnaid);
-            map.put("Subject", dids.get(1).dnaid);
+
+            Map<String, Object> metaDataMap = new HashMap<>();
+            metaDataMap.put("Issuer", dids.get(0).dnaid);
+            metaDataMap.put("Subject", dids.get(1).dnaid);
+
+            Map<String, Object> clvMap = new HashMap<String, Object>();
+            clvMap.put("typ", "AttestContract");
+            clvMap.put("addr", "8055b362904715fd84536e754868f4c8d27ca3f6");
+
+            Calendar c = Calendar.getInstance();
+            c.setTime(new Date());
+            c.add(Calendar.YEAR, 1);
+            long expires = c.getTimeInMillis() / 1000L;
+
+            Map<String, Object>  claimInfoMap = new HashMap<String, Object>();
+            claimInfoMap.put("name","Bob Dylan");
+            claimInfoMap.put("age","22");
 
 
-            String claim = dnaSdk.nativevm().dnaId().createDnaIdClaim(dids.get(0).dnaid,"passwordtest",new byte[]{}, "claim:context", map, map,map,0);
+            String claim = dnaSdk.nativevm().dnaId().createDnaIdClaim(dids.get(0).dnaid,"passwordtest",dids.get(0).controls.get(0).getSalt(), "claim:context", claimInfoMap, metaDataMap,clvMap,expires);
             System.out.println(claim);
+            System.out.println(new String(Base64.getDecoder().decode(claim.split("\\.")[1])));
             boolean b = dnaSdk.nativevm().dnaId().verifyDnaIdClaim(claim);
             System.out.println(b);
 

@@ -27,7 +27,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- *
+ * Account info in wallet
  */
 public class Account {
     public String label = "";

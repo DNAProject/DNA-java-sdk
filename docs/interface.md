@@ -1,7 +1,5 @@
 <h1 align="center"> DNA Java SDK 接口 </h1>
 
-<p align="center" class="version">Version 1.0.0 </p>
-
 
 ## 介绍：
 

@@ -15,10 +15,11 @@
 - [数字身份](dnaid.md)
 - [可信声明](dnaid_claim.md)
 - [智能合约部署和调用](smartcontract.md)
-- [接口基本信息](interface.md)
+- [SDK接口描述](interface.md)
 - [钱包文件及规范](Wallet_File_Specification_cn.md)
 - [权限管理](auth.md)
-- [API 文档](https://github.com/DNAProject/DNA/tree/master/docs/specifications)
+- [治理合约](governance.md)
+- [节点API文档](https://github.com/DNAProject/DNA/tree/master/docs/specifications)
 - [错误码](errorcode.md)
 
 ## 代码结构说明：

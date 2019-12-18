@@ -51,7 +51,7 @@ import java.security.spec.*;
 import java.util.Arrays;
 import java.util.Base64;
 
-
+//KeyPair,GcmDecoded,GcmEncode
 public class Account {
     private KeyType keyType;
     private Object[] curveParams;

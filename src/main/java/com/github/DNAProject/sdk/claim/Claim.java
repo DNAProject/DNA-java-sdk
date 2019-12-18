@@ -96,7 +96,7 @@ public class Claim {
 }
 
 class Header {
-    public String Alg = "ONT-ES256";
+    public String Alg = "DNA-ES256";
     public String Typ = "JWT-X";
     public String Kid;
     public Header(String alg,String typ, String kid) {
