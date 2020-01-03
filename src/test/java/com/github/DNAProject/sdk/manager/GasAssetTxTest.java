@@ -20,7 +20,7 @@ public class GasAssetTxTest {
     Account info2 = null;
     Account info3 = null;
     String password = "111111";
-    String wallet = "OntAssetTxTest.json";
+    String wallet = "GasAssetTxTest.json";
 
     Account payer;
     @Before

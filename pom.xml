@@ -133,10 +133,10 @@
                 <configuration>
                     <excludes>
                         <exclude>**/ConnectMgrTest.java</exclude>
-                        <exclude>**/OntAssetTxTest.java</exclude>
+                        <exclude>**/GasAssetTxTest.java</exclude>
                         <exclude>**/MerkleVerifierTest.java</exclude>
-                        <exclude>**/NativeOntIdTxTest.java</exclude>
-                        <exclude>**/OngTest.java</exclude>
+                        <exclude>**/NativeDnaIdTxTest.java</exclude>
+                        <exclude>**/GasTest.java</exclude>
                         <exclude>**/NeoVmTest.java</exclude>
                         <exclude>**/AuthTest.java</exclude>
                     </excludes>
