@@ -75,7 +75,7 @@ com.github.DNAProject.account.Account acct2 = new com.github.DNAProject.account.
 
 #### 1.1.2 按钱包规范存储：
 
-账户和身份信息保持在遵循钱包规范的文件中。[例子](https://github.com/DNAProject/DNASDKJava/blob/master/src/main/java/example/wallet/WalletDemo.java) 
+账户和身份信息保持在遵循钱包规范的文件中。[例子](https://github.com/DNAProject/DNA-java-sdk/blob/master/src/main/java/example/wallet/WalletDemo.java) 
 
 
 
@@ -134,7 +134,7 @@ Address recvAddr = Address.addressFromMultiPubKeys(2, acct1.serializePublicKey()
 
 ## 2. 原生资产转账
 
-参考例子：[例子](https://github.com/DNAProject/DNASDKJava/blob/master/src/main/java/example/transaction/MakeTxWithoutWalletDemo.java)
+参考例子：[例子](https://github.com/DNAProject/DNA-java-sdk/blob/master/src/main/java/example/transaction/MakeTxWithoutWalletDemo.java)
 
 
 ### 2.1 初始化
@@ -564,7 +564,7 @@ dnaSdk.addSign(txRx,acct0);
 
 **SDK与签名机交互**：
 
-[例子](https://github.com/DNAProject/DNASDKJava/blob/master/src/main/java/example/signature/SignServerDemo.java)
+[例子](https://github.com/DNAProject/DNA-java-sdk/blob/master/src/main/java/example/signature/SignServerDemo.java)
 
 ```java
 节点启动时打开签名机服务：
@@ -595,7 +595,7 @@ dnaSdk.getSignServer().sendSigTransferTx("ont","TU5exRFVqjRi5wnMVzNoWKBq9WFncLXE
 
  **对数据做签名**
 
-SDK提供直接对数据做签名的接口。[例子](https://github.com/DNAProject/DNASDKJava/blob/master/src/main/java/example/signature/SignatureDemo.java) 
+SDK提供直接对数据做签名的接口。[例子](https://github.com/DNAProject/DNA-java-sdk/blob/master/src/main/java/example/signature/SignatureDemo.java) 
 
 
 ```java
@@ -658,7 +658,7 @@ String txhash = dnaSdk.neovm().oep4().sendTransfer(acct1, acct2.getAddressU160()
 
 ### 3.3 并发
 
-实现步骤如 [例子](https://github.com/DNAProject/DNASDKJava/tree/master/src/main/java/example/oep/Oep4MultiTheadDemo.java)
+实现步骤如 [例子](https://github.com/DNAProject/DNA-java-sdk/tree/master/src/main/java/example/oep/Oep4MultiTheadDemo.java)
 
 
 
@@ -666,7 +666,7 @@ String txhash = dnaSdk.neovm().oep4().sendTransfer(acct1, acct2.getAddressU160()
 
 SDK发送注册Dnaid和转账等交易时，根据钱包中账户和身份信息解密出私钥再做签名，这个过程大概需要1-2秒时间。为了节省发交易时间，可以多线程或多机器事先创建交易，再批量发送。
 
-实现步骤如下，[例子](https://github.com/DNAProject/DNASDKJava/tree/master/src/main/java/example/transaction/CreateManyTx.java)
+实现步骤如下，[例子](https://github.com/DNAProject/DNA-java-sdk/tree/master/src/main/java/example/transaction/CreateManyTx.java)
 
 ### 4.1 批量构造交易
 

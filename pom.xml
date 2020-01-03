@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.github.DNAProject</groupId>
-    <artifactId>DNASDKJava</artifactId>
+    <artifactId>DNA-java-sdk</artifactId>
     <version>2.0.0</version>
 
     <properties>
@@ -23,11 +23,11 @@
 
     <distributionManagement>
         <snapshotRepository>
-            <id>DNASDKJava-snapshots</id>
+            <id>DNA-java-sdk-snapshots</id>
             <url>https://oss.sonatype.org/content/repositories/snapshots</url>
         </snapshotRepository>
         <repository>
-            <id>DNASDKJava-release</id>
+            <id>DNA-java-sdk-release</id>
             <url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
         </repository>
     </distributionManagement>
@@ -41,15 +41,15 @@
     </licenses>
     <scm>
         <tag>master</tag>
-        <url>https://github.com/DNAProject/DNASDKJava</url>
-        <connection>scm:git:git@github.com:DNAProject/DNASDKJava.git</connection>
-        <developerConnection>scm:git:git@github.com:DNAProject/DNASDKJava.git</developerConnection>
+        <url>https://github.com/DNAProject/DNA-java-sdk</url>
+        <connection>scm:git:git@github.com:DNAProject/DNA-java-sdk.git</connection>
+        <developerConnection>scm:git:git@github.com:DNAProject/DNA-java-sdk.git</developerConnection>
     </scm>
     <developers>
         <developer>
             <name>hellomyworld</name>
             <email>messixaviinsta0303@163.com</email>
-            <organization>DNAProject</organization>
+            <organization>DNA-java-sdk</organization>
         </developer>
     </developers>
 

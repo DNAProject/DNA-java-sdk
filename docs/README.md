@@ -56,10 +56,10 @@ $ mvn clean install
 
 
 ```
-<!-- https://mvnrepository.com/artifact/com.github.DNAProject/DNASDKJava -->
+<!-- https://mvnrepository.com/artifact/com.github.DNAProject/DNA-java-sdk -->
 <dependency>
     <groupId>com.github.DNAProject</groupId>
-    <artifactId>DNASDKJava/artifactId>
+    <artifactId>DNA-java-sdk/artifactId>
     <version>2.0.0</version>
 </dependency>
 ```
