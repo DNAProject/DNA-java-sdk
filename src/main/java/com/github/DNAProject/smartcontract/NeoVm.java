@@ -23,6 +23,7 @@ import com.github.DNAProject.DnaSdk;
 import com.github.DNAProject.account.Account;
 import com.github.DNAProject.common.ErrorCode;
 import com.github.DNAProject.core.transaction.Transaction;
+import com.github.DNAProject.dnaid.DnaId2;
 import com.github.DNAProject.smartcontract.neovm.*;
 import com.github.DNAProject.smartcontract.neovm.abi.AbiFunction;
 import com.github.DNAProject.sdk.exception.SDKException;
@@ -34,6 +35,8 @@ public class NeoVm {
     private Oep8 oep8Tx = null;
     private Record recordTx = null;
     private ClaimRecord claimRecordTx = null;
+    private CredentialRecord credentialRecordTx = null;
+    private DnaId2 dnaId2 = null;
 
     private DnaSdk sdk;
     public NeoVm(DnaSdk sdk){
@@ -79,6 +82,30 @@ public class NeoVm {
         }
         return claimRecordTx;
     }
+
+    public CredentialRecord credentialRecord() {
+        if (credentialRecordTx == null) {
+            credentialRecordTx = new CredentialRecord(sdk);
+        }
+        return credentialRecordTx;
+    }
+
+    public DnaId2 dnaId2() throws Exception {
+        if (dnaId2 == null) {
+            dnaId2 = new DnaId2("", null, credentialRecordTx, sdk.nativevm().dnaId());
+        }
+        return dnaId2;
+    }
+
+    public DnaId2 dnaId2(String dnaId, Account signer) throws Exception {
+        if (dnaId2 == null) {
+            dnaId2 = new DnaId2(dnaId, signer, credentialRecordTx, sdk.nativevm().dnaId());
+        } else {
+            dnaId2.updateDnaIdAndSigner(dnaId, signer);
+        }
+        return dnaId2;
+    }
+
     public Object sendTransaction(String contractAddr, Account acct,Account payerAcct, long gaslimit, long gasprice, AbiFunction func, boolean preExec) throws Exception {
         byte[] params;
         if (func != null) {
