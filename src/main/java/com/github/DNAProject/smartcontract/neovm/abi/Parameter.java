@@ -71,7 +71,7 @@ public class Parameter {
                 boolean tmp = (boolean) value;
                 this.value = JSON.toJSONString(tmp);
             } else if ("Integer".equals(type)) {
-                long tmp = (long)value;
+                long tmp = Long.valueOf(value.toString());
                 this.value = JSON.toJSONString(tmp);
             } else if ("Array".equals(type)) {
                 List tmp = (List) value;
