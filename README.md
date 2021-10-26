@@ -1,6 +1,6 @@
 
 <h1 align="center">JAVA SDK For DNA </h1>
-<h4 align="center">Version 2.0.0 </h4>
+<h4 align="center">Version 2.1.0 </h4>
 
 ## Overview
 
@@ -37,7 +37,7 @@ Add maven dependency:
 <dependency>
     <groupId>com.github.DNAProject</groupId>
     <artifactId>DNA-java-sdk/artifactId>
-    <version>2.0.0</version>
+    <version>2.1.0</version>
 </dependency>
 ```
 

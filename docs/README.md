@@ -1,6 +1,6 @@
 <h1 align="center"> DNA Java SDK 介绍 </h1>
 
-<p align="center" class="version">Version 2.0.0 </p>
+<p align="center" class="version">Version 2.1.0 </p>
 
 
 # 总体介绍
